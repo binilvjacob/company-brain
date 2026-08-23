@@ -6,15 +6,23 @@ genuinely weak at exact-token matching on these (it will happily return the
 MetLife playbook for a Cigna question). The lexical arm is load-bearing here,
 not a nice-to-have.
 
-Score = RRF(lexical) + RRF(vector)
-        + W_FRESHNESS * exp(-age/half_life)      (a 3-week-old correction should
-        + W_AUTHORITY * doc_type_weight           outrank an 8-month-old SOP, and
-        + W_TEAM_MATCH * team_match               an SOP should outrank a Slack
-                                                  message at equal relevance)
+Score = [RRF(lexical) + RRF(vector)]
+        × (1 + W_FRESHNESS·exp(-age/half_life)   (a 3-week-old correction should
+           + W_AUTHORITY·doc_type_weight          outrank an 8-month-old SOP, and
+           + W_TEAM_MATCH·team_match)             an SOP should outrank a Slack
+                                                  message at EQUAL relevance)
+Boosts are multiplicative because RRF's dynamic range is tiny — additive
+boosts at any useful magnitude drown relevance and float fresh-but-irrelevant
+documents to the top (caught by the eval harness, kept as a failure note).
 Visibility is a hard filter, not a boost: a doc tagged leadership-only never
 enters the candidate set for other roles.
+
+The lexical arm runs websearch semantics (AND) first for precision, then falls
+back to an OR-of-terms query when AND is too strict — natural-language
+questions rarely contain every word of the answer's chunk.
 """
 import math
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -86,6 +94,19 @@ def search(conn: psycopg.Connection, q: str, role: str = "everyone",
         """,
         [q, q, *params],
     ).fetchall()
+    if len(lex_rows) < 5:
+        # AND semantics too strict for this phrasing — retry as OR-of-terms.
+        terms = " | ".join(re.findall(r"[a-zA-Z0-9]+", q))
+        if terms:
+            lex_rows = conn.execute(
+                f"""
+                SELECT c.id, ts_rank_cd(c.tsv, to_tsquery('english', %s)) AS r
+                FROM chunks c JOIN documents d ON d.id = c.doc_id
+                WHERE c.tsv @@ to_tsquery('english', %s) AND {filters}
+                ORDER BY r DESC LIMIT {n}
+                """,
+                [terms, terms, *params],
+            ).fetchall()
 
     qvec = str(embed_one(expanded))
     vec_rows = conn.execute(
@@ -124,15 +145,16 @@ def search(conn: psycopg.Connection, q: str, role: str = "everyone",
         freshness = math.exp(-age_days / config.FRESHNESS_HALF_LIFE_DAYS)
         authority = config.DOC_TYPE_AUTHORITY.get(m["doc_type"], 0.7)
         team_match = 1.0 if teams and m["team"] in teams else 0.0
+        multiplier = (1.0
+                      + config.W_FRESHNESS * freshness
+                      + config.W_AUTHORITY * authority
+                      + config.W_TEAM_MATCH * team_match)
         scored.append(RetrievedChunk(
             chunk_id=cid, doc_id=m["doc_id"], title=m["title"],
             heading=m["heading"] or "", text=m["text"], team=m["team"],
             doc_type=m["doc_type"], owner=m["owner"], source_url=m["source_url"],
             updated_at=m["updated_at"],
-            score=rrf
-                  + config.W_FRESHNESS * freshness
-                  + config.W_AUTHORITY * authority
-                  + config.W_TEAM_MATCH * team_match,
+            score=rrf * multiplier,
             cosine_sim=cosine.get(cid, 0.0),
             lexical_rank=lex_rank.get(cid),
             vector_rank=vec_rank.get(cid),

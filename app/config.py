@@ -23,9 +23,15 @@ GENERATION_MODEL = env("GENERATION_MODEL", "gpt-4o-mini")
 CANDIDATES_PER_ARM = int(env("CANDIDATES_PER_ARM", "40"))
 TOP_K = int(env("TOP_K", "10"))
 RRF_K = int(env("RRF_K", "60"))
-W_FRESHNESS = float(env("W_FRESHNESS", "0.012"))
-W_AUTHORITY = float(env("W_AUTHORITY", "0.008"))
-W_TEAM_MATCH = float(env("W_TEAM_MATCH", "0.006"))
+# Metadata boosts are MULTIPLICATIVE fractions on the fused relevance score:
+#   score = rrf * (1 + W_FRESHNESS*freshness + W_AUTHORITY*authority + W_TEAM*match)
+# RRF's dynamic range is tiny (1/61 .. 1/100 per arm); additive boosts at any
+# useful size would overwhelm relevance entirely (found the hard way in eval —
+# see WRITEUP failure notes). Multiplicative boosts break near-ties without
+# letting a fresh-but-irrelevant doc outrank a genuinely relevant one.
+W_FRESHNESS = float(env("W_FRESHNESS", "0.25"))
+W_AUTHORITY = float(env("W_AUTHORITY", "0.15"))
+W_TEAM_MATCH = float(env("W_TEAM_MATCH", "0.10"))
 FRESHNESS_HALF_LIFE_DAYS = float(env("FRESHNESS_HALF_LIFE_DAYS", "180"))
 
 # Confidence gate: below this the Brain refuses and logs a gap instead of guessing.
