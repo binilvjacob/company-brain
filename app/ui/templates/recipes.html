@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <div>
+    <h1 class="font-bold text-lg">Recipes</h1>
+    <p class="text-sm text-slate-500">Saved mini-tools on top of the Brain. Anyone can build one — no code, no engineer.</p>
+  </div>
+  <a href="/recipes-ui/new" class="bg-sky-700 hover:bg-sky-800 text-white rounded-md px-4 py-2 text-sm font-medium">+ New recipe</a>
+</div>
+<div class="grid md:grid-cols-2 gap-3">
+  {% for r in recipes %}
+  <a href="/r/{{ r.slug }}" class="block bg-white border border-slate-200 rounded-lg p-4 hover:border-sky-500">
+    <div class="font-semibold">{{ r.name }}</div>
+    <div class="text-sm text-slate-500 mt-0.5">{{ r.description }}</div>
+    <div class="text-[11px] text-slate-400 mt-2">/r/{{ r.slug }} · by {{ r.created_by }} · also callable: <code>POST /recipes/{{ r.slug }}/run</code></div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

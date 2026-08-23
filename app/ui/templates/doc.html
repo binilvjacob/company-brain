@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+{% if d %}
+<div class="max-w-3xl">
+  <a href="/sources" class="text-xs text-sky-700 underline">← all sources</a>
+  <h1 class="font-bold text-lg mt-1">{{ d.title }}</h1>
+  <div class="text-xs text-slate-500 mt-1 mb-3">
+    {{ d.doc_type }} · team {{ d.team }} · owner @{{ d.owner }} · updated {{ d.updated_at.strftime('%Y-%m-%d') }}
+    · via {{ d.source_type }}{% if 'everyone' not in d.visibility %} · 🔒 visibility: {{ d.visibility | join(', ') }}{% endif %}
+  </div>
+  {% if d.provenance %}
+  <div class="text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 rounded px-2 py-1.5 mb-3">
+    Captured via {{ d.provenance.via }} by {{ d.provenance.captured_by }}{% if d.provenance.case_ref %} · case {{ d.provenance.case_ref }}{% endif %} · {{ d.provenance.captured_at[:10] }}
+  </div>
+  {% endif %}
+  <pre class="whitespace-pre-wrap bg-white border border-slate-200 rounded-lg p-4 text-[13px] leading-relaxed">{{ d.body }}</pre>
+</div>
+{% else %}
+<p class="text-slate-500">Document not found.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+<div class="bg-white border border-slate-200 rounded-lg p-4">
+  <div class="text-xs text-slate-500 mb-1">Q · {{ q }}</div>
+  {% if r.answered %}
+    <div class="md leading-relaxed" data-raw="{{ r.answer_markdown | e }}"></div>
+    {% if r.staleness_note %}
+      <div class="mt-2 text-xs bg-amber-50 text-amber-800 border border-amber-200 rounded px-2 py-1 inline-block">⚠ {{ r.staleness_note }}</div>
+    {% endif %}
+    <div class="mt-3 flex flex-wrap gap-1.5">
+      {% for c in r.citations %}
+      <button data-cite-n="{{ c.n }}" data-chunk="{{ c.chunk_id }}"
+              hx-get="/ui/chunk/{{ c.chunk_id }}" hx-target="#sourcepane" hx-swap="innerHTML"
+              class="text-xs border border-slate-300 rounded-full px-2 py-0.5 hover:bg-sky-50"
+              title="{{ c.doc_type }} · {{ c.team }} · updated {{ c.updated_at }}">
+        [{{ c.n }}] {{ c.title | truncate(46) }}
+      </button>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-slate-800"><span class="font-semibold text-rose-700">I don't know.</span> {{ r.message }}</div>
+    <div class="mt-1 text-xs text-slate-500">Refusals are logged — see the <a href="/gaps-ui" class="text-sky-700 underline">Gaps dashboard</a>.</div>
+  {% endif %}
+  <div class="mt-2 text-[11px] text-slate-400">confidence {{ r.confidence }} · {{ r.latency_ms }} ms{% if r.cost_usd %} · ${{ '%.4f' | format(r.cost_usd) }}{% endif %}</div>
+</div>

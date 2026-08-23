@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+  <div class="lg:col-span-3">
+    <form hx-post="/ui/ask" hx-target="#answers" hx-swap="afterbegin" class="flex gap-2 mb-4">
+      <input name="q" required autofocus placeholder='Try: "Does Delta Dental of California count perio maintenance against the cleaning frequency limit?"'
+             class="flex-1 border border-slate-300 rounded-md px-3 py-2 bg-white focus:outline-sky-600">
+      <select name="role" class="border border-slate-300 rounded-md px-2 bg-white text-sm" title="Viewing as (visibility demo — no auth by design)">
+        {% for r in roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+      </select>
+      <button class="bg-sky-700 hover:bg-sky-800 text-white rounded-md px-4 py-2 font-medium">Ask</button>
+    </form>
+    <div id="answers" class="space-y-4"></div>
+    <div class="mt-6 text-xs text-slate-500 leading-relaxed">
+      <p class="font-semibold text-slate-600 mb-1">Things worth trying</p>
+      <p>· A payer rule: <em>"What is the MetLife waiting period on voluntary plans?"</em><br>
+         · A contradiction: the DDCA perio maintenance question above — watch it prefer the newer source.<br>
+         · Something the Brain doesn't know: <em>"What are Humana's eligibility quirks?"</em> — it refuses and logs a gap.<br>
+         · A restricted doc: ask about comp bands as <code>everyone</code>, then as <code>leadership</code>.</p>
+    </div>
+  </div>
+  <div class="lg:col-span-2">
+    <div id="sourcepane" class="sticky top-4 bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-500 min-h-[10rem]">
+      Citations open here — click any <span class="text-sky-700 font-semibold">[n]</span> in an answer.
+    </div>
+  </div>
+</div>
+{% endblock %}

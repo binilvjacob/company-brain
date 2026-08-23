@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl">
+  <h1 class="font-bold text-lg mb-1">New recipe</h1>
+  <p class="text-sm text-slate-500 mb-4">Five fields. Save it, share the URL, done — no code, no deploy, no engineer.</p>
+  <form method="post" action="/recipes-ui/new" class="bg-white border border-slate-200 rounded-lg p-4 space-y-3 text-sm">
+    <label class="block"><span class="text-slate-600">Name</span>
+      <input name="name" required placeholder="Competitor one-pager" class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2"></label>
+    <label class="block"><span class="text-slate-600">Description</span>
+      <input name="description" placeholder="What this tool does, for whom" class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2"></label>
+    <label class="block"><span class="text-slate-600">Inputs <em class="text-slate-400">(comma-separated field names — they become the form)</em></span>
+      <input name="inputs" placeholder="competitor" class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2"></label>
+    <label class="block"><span class="text-slate-600">Retrieval query template <em class="text-slate-400">(use {field} to splice inputs in)</em></span>
+      <input name="query" required placeholder="{competitor} positioning objection pricing case study" class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2"></label>
+    <label class="block"><span class="text-slate-600">Team filter <em class="text-slate-400">(optional, comma-separated: ops, product, eng, gtm, ga)</em></span>
+      <input name="team_filter" placeholder="gtm" class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2"></label>
+    <label class="block"><span class="text-slate-600">Prompt</span>
+      <textarea name="prompt" required rows="5" placeholder="Build a one-page brief on {competitor}. Sections: How we win · Their pitch · Pricing angle · Proof points. Cite every line; write 'Not documented — gap' where sources are missing."
+                class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2"></textarea></label>
+    <div class="flex items-center gap-2">
+      <input name="creator" placeholder="Your name" class="border border-slate-300 rounded-md px-3 py-2">
+      <button class="bg-sky-700 hover:bg-sky-800 text-white rounded-md px-4 py-2 font-medium">Save recipe</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

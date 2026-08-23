@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="font-bold text-lg">Sources</h1>
+  <p class="text-sm text-slate-500">Everything the Brain knows, by team. All synthetic — see DATA.md in the repo.</p>
+</div>
+{% for team, docs in teams.items() %}
+<h2 class="font-semibold text-sm uppercase tracking-wide text-slate-500 mt-5 mb-2">{{ team }} <span class="text-slate-400 normal-case">· {{ docs | length }} docs</span></h2>
+<div class="bg-white border border-slate-200 rounded-lg divide-y divide-slate-100">
+  {% for d in docs %}
+  <a href="/sources/{{ d.id }}" class="flex items-baseline justify-between px-3 py-2 hover:bg-slate-50">
+    <div>
+      <span class="text-slate-800">{{ d.title }}</span>
+      <span class="ml-2 text-[11px] text-slate-400">{{ d.doc_type }} · @{{ d.owner }}{% if 'everyone' not in d.visibility %} · 🔒 {{ d.visibility | join(', ') }}{% endif %}</span>
+    </div>
+    <span class="text-xs text-slate-400 whitespace-nowrap ml-3">{{ d.updated_at.strftime('%Y-%m-%d') }} · {{ d.n_chunks }} ch</span>
+  </a>
+  {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="font-bold text-lg">{{ recipe.name }}</h1>
+  <p class="text-sm text-slate-500">{{ recipe.description }}</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+  <div class="lg:col-span-3">
+    <form hx-post="/r/{{ recipe.slug }}" hx-target="#result" hx-swap="innerHTML"
+          class="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+      {% for inp in recipe.inputs %}
+      <label class="block text-sm">
+        <span class="text-slate-600">{{ inp.label or inp.name }}{% if inp.optional %} <em class="text-slate-400">(optional)</em>{% endif %}</span>
+        {% if inp.type == 'textarea' %}
+        <textarea name="{{ inp.name }}" rows="4" {% if not inp.optional %}required{% endif %}
+                  placeholder="{{ inp.placeholder or '' }}"
+                  class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2"></textarea>
+        {% else %}
+        <input name="{{ inp.name }}" {% if not inp.optional %}required{% endif %}
+               placeholder="{{ inp.placeholder or '' }}"
+               class="mt-1 w-full border border-slate-300 rounded-md px-3 py-2">
+        {% endif %}
+      </label>
+      {% endfor %}
+      <div class="flex items-center gap-2">
+        <button class="bg-sky-700 hover:bg-sky-800 text-white rounded-md px-4 py-2 text-sm font-medium">Run</button>
+        <select name="role" class="border border-slate-300 rounded-md px-2 py-1.5 bg-white text-sm">
+          {% for r in roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+        </select>
+      </div>
+    </form>
+    <div id="result" class="mt-4"></div>
+  </div>
+  <div class="lg:col-span-2">
+    <div id="sourcepane" class="sticky top-4 bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-500 min-h-[10rem]">
+      Citations open here.
+    </div>
+  </div>
+</div>
+{% endblock %}

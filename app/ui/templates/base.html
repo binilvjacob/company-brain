@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Needletail Company Brain</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script src="https://unpkg.com/marked@12.0.2/marked.min.js"></script>
+  <style>
+    .md p { margin: .35rem 0; } .md ul { list-style: disc; margin-left: 1.2rem; }
+    .md code { background: #f1f5f9; padding: 0 .25rem; border-radius: .2rem; }
+    .cite { cursor: pointer; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 text-[15px]">
+<div class="max-w-5xl mx-auto px-4 py-5">
+  <header class="flex items-baseline justify-between border-b border-slate-200 pb-3 mb-5">
+    <div>
+      <a href="/" class="font-bold text-lg tracking-tight">Needletail <span class="text-sky-700">Company Brain</span></a>
+      <span class="ml-2 text-xs text-slate-500">cited answers or honest refusals — nothing in between</span>
+    </div>
+    <nav class="flex gap-1 text-sm">
+      {% for tab, href, label in [('ask','/','Ask'), ('recipes','/recipes-ui','Recipes'), ('gaps','/gaps-ui','Gaps'), ('sources','/sources','Sources')] %}
+      <a href="{{ href }}" class="px-3 py-1.5 rounded-md {% if active == tab %}bg-sky-700 text-white{% else %}text-slate-600 hover:bg-slate-200{% endif %}">{{ label }}</a>
+      {% endfor %}
+      <a href="/docs" class="px-3 py-1.5 rounded-md text-slate-600 hover:bg-slate-200" title="Brain API">API</a>
+    </nav>
+  </header>
+  {% block content %}{% endblock %}
+</div>
+<script>
+  function renderMd() {
+    document.querySelectorAll('.md[data-raw]').forEach(el => {
+      el.innerHTML = marked.parse(el.dataset.raw)
+        .replace(/\[(\d+)\]/g, (m, n) => {
+          const id = document.querySelector(`[data-cite-n="${n}"]`)?.dataset.chunk;
+          return id ? `<sup class="cite text-sky-700 font-semibold" hx-get="/ui/chunk/${id}" hx-target="#sourcepane" hx-swap="innerHTML">[${n}]</sup>` : m;
+        });
+      el.removeAttribute('data-raw');
+      if (window.htmx) htmx.process(el);
+    });
+  }
+  document.addEventListener('htmx:afterSwap', renderMd);
+  document.addEventListener('DOMContentLoaded', renderMd);
+</script>
+</body>
+</html>

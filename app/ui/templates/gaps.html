@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="font-bold text-lg">Knowledge gaps</h1>
+  <p class="text-sm text-slate-500">What this company most needs to write down, ranked by how often someone asked. Every refusal lands here, routed to an owner.</p>
+</div>
+<div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-500">
+      <tr><th class="px-3 py-2">Question</th><th class="px-3 py-2">Asked</th><th class="px-3 py-2">Routed to</th><th class="px-3 py-2">Team</th><th class="px-3 py-2">Status</th><th class="px-3 py-2">Last asked</th></tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for g in gaps %}
+      <tr class="{% if g.status == 'answered' %}text-slate-400{% endif %}">
+        <td class="px-3 py-2">{{ g.question }}{% if g.source == 'seeded-demo' %} <span class="text-[10px] text-slate-400 border border-slate-200 rounded px-1">demo seed</span>{% endif %}</td>
+        <td class="px-3 py-2 font-semibold">{{ g.count }}×</td>
+        <td class="px-3 py-2">@{{ g.routed_owner }}</td>
+        <td class="px-3 py-2">{{ g.team_guess }}</td>
+        <td class="px-3 py-2">{% if g.status == 'open' %}<span class="text-rose-700 font-medium">open</span>{% else %}<span class="text-emerald-700">answered</span>{% endif %}</td>
+        <td class="px-3 py-2 text-slate-500">{{ g.last_asked.strftime('%Y-%m-%d %H:%M') }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="px-3 py-6 text-center text-slate-400">No gaps yet — ask the Brain something it can't answer.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
