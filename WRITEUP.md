@@ -10,11 +10,13 @@
 - The one insight everything follows from: **the most valuable knowledge at
   Needletail is generated hourly by the exception queue and then thrown away.**
   The Brain is the memory layer of your human-in-the-loop.
-- Live app: **{LIVE_URL}** · Repo: **{REPO_URL}** (`docker compose up` works
-  from scratch; `make eval` reproduces the numbers below).
-- Measured, not vibes: Recall@5 **{RECALL}**, groundedness **{GROUND}**,
-  refusal accuracy **{REFUSAL}** on a 31-question golden set — failure modes
-  listed in §6.
+- Live app: **https://company-brain-cugn.onrender.com** · Repo:
+  **https://github.com/binilvjacob/company-brain** (`docker compose up` works
+  from scratch; `make eval` reproduces the numbers below, and CI re-runs the
+  full eval + a live-site smoke on every push).
+- Measured, not vibes: Recall@5 **1.00**, groundedness **1.00**, refusal
+  accuracy **1.00** on a 31-question golden set — it did not start there, and
+  the bugs the eval caught on the way are §6's failure notes.
 - Headline demo: **Exception Triage Assist** — paste a flagged verification,
   get the governing rule plus the two most similar past resolutions and a
   suggested decision, then one click teaches the Brain the outcome.
@@ -142,28 +144,39 @@ wrong role). `make eval` reproduces this table:
 
 | Metric | Value |
 |---|---|
-| Recall@5 | {RECALL} |
-| Answer rate (answerable) | {ANSWER_RATE} |
-| Groundedness (LLM-judged) | {GROUND} |
-| Refusal accuracy (unanswerable) | {REFUSAL} |
-| p50 latency | {P50} ms |
-| Mean cost/query | ${COST} |
+| Recall@5 | 1.00 |
+| Answer rate (answerable) | 1.00 |
+| Groundedness (LLM-judged) | 1.00 |
+| Refusal accuracy (unanswerable) | 1.00 |
+| p50 latency | 1.5 s |
+| Mean cost/query | $0.0003 |
 
-Failures and honest notes:
+A clean board — which it did not start with, and which deserves suspicion.
+What the eval actually caught on the way, in order:
 
 - **My first ranking formula was wrong.** Additive freshness/authority boosts
   swamped RRF's tiny dynamic range and floated fresh-but-irrelevant docs to
-  the top; mock-mode Recall@5 went 0.68 → 0.88 when I made boosts
-  multiplicative tie-breakers. The eval harness caught it; without a baseline
-  I would have shipped it.
-- **The refusal gate is two mechanisms, not one.** The confidence gate catches
-  off-topic questions cheaply, but topic-adjacent unanswerables (Humana — a
-  payer we have no playbook for) survive retrieval and must be refused by the
-  grounding contract at generation time. The threshold sweep in the eval
-  output is how I picked the operating point ({THRESHOLD}).
-- {FAILNOTE}
-- Latency is dominated by generation, not retrieval; retrieval is a few ms on
-  this corpus and stays sane at 100× with the same Postgres.
+  the top; Recall@5 went 0.68 → 0.88 the moment boosts became multiplicative
+  tie-breakers. Without a baseline number I would have shipped it.
+- **The Humana trap beat the first calibration.** At a 0.35 gate, "what are
+  Humana's quirks?" sailed through retrieval (confidence 0.47 — payer-quirk
+  material is semantically close even when the payer is absent) and the model
+  produced a cited meta-answer instead of refusing: refusal accuracy 0.83.
+  Two fixes, both from eval data: the threshold sweep showed 0.50 gates five
+  of six unanswerables while the *lowest* answerable confidence is 0.59, and
+  the grounding contract now requires entity-specific support. Refusal
+  accuracy went to 1.00 with zero wrongly-refused questions.
+- **The LLM judge needed the same context discipline as the generator.** It
+  first flagged a true claim as ungrounded because the supporting fact lived
+  in a document title it was never shown; shown the title, it then rejected a
+  June 2026 date as "in the future" — its own knowledge cutoff leaking into
+  grading. Judges need the generator's full context and a pinned today-date.
+- **The caveat that matters:** 31 questions, written by the same person who
+  wrote the corpus. A perfect score means the golden set is passable, not
+  that the system is finished — and the 0.50 gate is calibrated on this same
+  set, so it is a starting point to re-fit on real production questions from
+  week one. Latency is generation-dominated; retrieval itself is a few
+  milliseconds and holds at 100× corpus size on the same Postgres.
 
 ## 7. PHI & compliance posture
 

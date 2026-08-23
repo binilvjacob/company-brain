@@ -9,7 +9,8 @@
 > resolutions → richer Brain → fewer exceptions. That's how 85%
 > straight-through becomes 92% without retraining a model.
 
-**Live demo:** {LIVE_URL} · **Writeup:** [WRITEUP.md](WRITEUP.md) ·
+**Live demo:** https://company-brain-cugn.onrender.com ·
+**Writeup:** [WRITEUP.md](WRITEUP.md) ·
 **Data statement:** [DATA.md](DATA.md) (everything is synthetic)
 
 ## 60-second quickstart
@@ -75,15 +76,18 @@ reproduce with `make eval`.
 
 | Metric | Value |
 |---|---|
-| Recall@5 | {RECALL} |
-| Answer rate (answerable) | {ANSWER_RATE} |
-| Groundedness (LLM-judged) | {GROUND} |
-| Refusal accuracy | {REFUSAL} |
-| p50 latency | {P50} ms |
-| Mean cost/query | ${COST} |
+| Recall@5 | 1.00 |
+| Answer rate (answerable) | 1.00 |
+| Groundedness (LLM-judged) | 1.00 |
+| Refusal accuracy | 1.00 |
+| p50 latency | 1.5 s |
+| Mean cost/query | $0.0003 |
 
-Failure modes are listed honestly in [WRITEUP.md §6](WRITEUP.md) — including
-the ranking bug the eval caught before it shipped.
+It didn't start at 1.00 — the ranking bug, the Humana refusal miss, and two
+LLM-judge bugs the harness caught on the way are documented honestly in
+[WRITEUP.md §6](WRITEUP.md). Every push re-runs the full eval *and* a
+15-check smoke against the live site; the run-by-run history self-reports to
+the [`ci-reports` branch](../../tree/ci-reports).
 
 ## Layout
 
