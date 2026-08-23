@@ -44,7 +44,8 @@ jobs:
         with: {python-version: "3.11", cache: pip}
       - run: pip install -r requirements.txt pytest
       - name: pytest (mock providers, real Postgres)
-        run: pytest -q 2>&1 | tee test-output.txt
+        shell: bash
+        run: python -m pytest -q 2>&1 | tee test-output.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: test-output, path: test-output.txt}
@@ -73,8 +74,10 @@ jobs:
         with: {python-version: "3.11", cache: pip}
       - run: pip install -r requirements.txt
       - name: seed with real embeddings
+        shell: bash
         run: python scripts/seed.py 2>&1 | tee seed-output.txt
       - name: run eval (real embeddings + generation + LLM judge)
+        shell: bash
         run: python eval/run_eval.py 2>&1 | tee eval-output.txt
       - name: job summary
         if: always()
@@ -102,6 +105,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - name: provision + deploy on Render
+        shell: bash
         run: python scripts/render_deploy.py 2>&1 | tee deploy-output.txt
       - name: extract URL
         run: grep -o 'RENDER_URL=.*' deploy-output.txt | tail -1 > deploy-url.txt && cat deploy-url.txt

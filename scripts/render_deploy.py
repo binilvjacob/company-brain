@@ -74,7 +74,13 @@ def ensure_postgres(oid: str) -> str:
     return info["internalConnectionString"]
 
 
-def ensure_service(oid: str, database_url: str) -> dict:
+def _unwrap(obj: dict, key: str) -> dict:
+    """Render responses sometimes nest the resource under a singular key."""
+    return obj.get(key, obj) if isinstance(obj, dict) else obj
+
+
+def ensure_service(oid: str, database_url: str) -> tuple[dict, str | None]:
+    """Returns (service, deploy_id_from_creation_or_None)."""
     svc = find("services", SVC_NAME)
     env_vars = [
         {"key": "DATABASE_URL", "value": database_url},
@@ -96,19 +102,25 @@ def ensure_service(oid: str, database_url: str) -> dict:
                 },
             },
         })
-        svc = created.get("service", created)
-    else:
-        api("PUT", f"/services/{svc['id']}/env-vars", env_vars)
-    return svc
+        print(f"  create response keys: {sorted(created)}")
+        return _unwrap(created, "service"), created.get("deployId")
+    api("PUT", f"/services/{svc['id']}/env-vars", env_vars)
+    return svc, None
 
 
-def deploy_and_wait(svc_id: str) -> None:
-    dep = api("POST", f"/services/{svc_id}/deploys", {})
-    dep_id = dep["id"]
-    terminal = {"live", "build_failed", "update_failed", "canceled", "pre_deploy_failed"}
+def deploy_and_wait(svc_id: str, dep_id: str | None = None) -> None:
+    if not dep_id:
+        dep = api("POST", f"/services/{svc_id}/deploys", {})
+        dep_id = _unwrap(dep, "deploy").get("id")
+    if not dep_id:
+        print(f"could not determine deploy id from response", file=sys.stderr)
+        sys.exit(1)
+    terminal = {"live", "build_failed", "update_failed", "canceled",
+                "pre_deploy_failed", "deactivated"}
     status = ""
     for _ in range(120):
-        status = api("GET", f"/services/{svc_id}/deploys/{dep_id}").get("status")
+        status = _unwrap(api("GET", f"/services/{svc_id}/deploys/{dep_id}"),
+                         "deploy").get("status")
         print(f"  deploy status: {status}")
         if status in terminal:
             break
@@ -136,9 +148,9 @@ def health_check(url: str) -> None:
 def main() -> None:
     oid = owner_id()
     database_url = ensure_postgres(oid)
-    svc = ensure_service(oid, database_url)
+    svc, creation_deploy = ensure_service(oid, database_url)
     url = (svc.get("serviceDetails") or {}).get("url") or f"https://{SVC_NAME}.onrender.com"
-    deploy_and_wait(svc["id"])
+    deploy_and_wait(svc["id"], creation_deploy)
     health_check(url)
     print(f"RENDER_URL={url}")
 
