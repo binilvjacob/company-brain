@@ -57,10 +57,11 @@ refusal that becomes a logged, owner-routed gap.
 | Capture loop ("Teach the Brain", gaps dashboard) | The compounding mechanism; ~150 lines that turn an artifact into a system |
 | Eval harness with golden set | Without a baseline, "retrieval improved" is a feeling |
 | Synthetic 114-object corpus with planted contradictions, restricted docs, and real gaps | The demo is only as honest as the questions it can fail |
+| **A live connector (Telegram, standing in for WhatsApp)** — the bot sits in a group chat: messages buffer (PHI-redacted at the boundary), quiet threads distill into low-authority chat notes, `/teach` captures vouched knowledge with provenance, `/ask` answers in-chat with citations | The collection problem *is* the product problem — one live stream proves knowledge arrives with no exports and no uploads; chat is distilled, not hoovered, so trust tiers survive |
 
 | Deferred | Why |
 |---|---|
-| Live Slack/Notion/Drive connectors | A day of OAuth plumbing reviewers can't see; the `SourceAdapter` interface + a typed Notion stub shows the seam (a real connector is a ~50-line file) |
+| Live Slack/Notion/Drive connectors (OAuth) | OAuth plumbing reviewers can't see; the `SourceAdapter` interface + the working Telegram connector prove the seam and the live path — Slack's Events API is the same webhook shape as Telegram's, so each remaining connector is scope, not design |
 | Auth/SSO | Doc-level `visibility` tags + a role switcher demonstrate permission thinking in 20 lines |
 | Feedback ranking (thumbs up/down retraining) | Needs real usage data to be honest |
 
@@ -135,6 +136,16 @@ same flywheel from the other side as routed gaps. This is the difference
 between a search tool and infrastructure that compounds: the exception queue
 trains the Brain, and the Brain is the on-ramp to feeding resolved knowledge
 into the verification agents themselves.
+
+The same loop now runs on a **live stream**: the Telegram connector puts the
+Brain inside a group chat (WhatsApp is the identical mechanism behind a Meta
+verification queue). The chat buffers with identifiers redacted before they
+touch disk, quiet conversations distill into low-authority chat notes, a
+`/teach` command captures the last run as vouched knowledge with provenance,
+and `/ask` answers in the chat — cited, or refused into the gap log. No
+exports, no uploads, nobody doing anything manually: knowledge is collected
+where it is generated, at the trust tier it deserves. Slack's Events API is
+the same webhook shape, which is why it's next rather than novel.
 
 ## 6. How I know it works — and where it fails
 

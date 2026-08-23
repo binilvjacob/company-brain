@@ -79,6 +79,16 @@ check("triage: past resolutions surfaced",
 gaps = get("/gaps")[1]
 check("gaps: Humana refusal logged", "humana" in gaps.lower())
 
+if health.get("connectors", {}).get("telegram"):
+    # Connector live: the webhook must reject calls without the shared secret.
+    try:
+        post("/hooks/telegram", {"update_id": 0})
+        check("telegram: webhook auth enforced", False, "unauthenticated call accepted")
+    except urllib.error.HTTPError as e:
+        check("telegram: webhook auth enforced", e.code == 403, f"status={e.code}")
+else:
+    print("SKIP  telegram checks (connector not configured on this deploy)")
+
 if FAILURES:
     print(f"\n{len(FAILURES)} smoke failure(s): {FAILURES}")
     sys.exit(1)

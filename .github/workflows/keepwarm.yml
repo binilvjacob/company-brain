@@ -20,3 +20,14 @@ jobs:
           else
             echo "no deploy/render_url.txt yet"
           fi
+      - name: flush connector sync (ambient chat digests)
+        env:
+          CONNECTOR_SECRET: ${{ secrets.CONNECTOR_SECRET }}
+        run: |
+          if [ -f deploy/render_url.txt ] && [ -n "$CONNECTOR_SECRET" ]; then
+            url=$(cat deploy/render_url.txt)
+            curl -sf --max-time 60 -X POST -H "X-Sync-Token: $CONNECTOR_SECRET" \
+              "$url/sync/run" || echo "sync failed (non-fatal)"
+          else
+            echo "connector sync skipped (no secret configured)"
+          fi

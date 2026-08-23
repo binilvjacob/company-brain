@@ -87,6 +87,9 @@ def ensure_service(oid: str, database_url: str) -> tuple[dict, str | None]:
         {"key": "OPENAI_API_KEY", "value": OPENAI_KEY},
         {"key": "PYTHON_VERSION", "value": "3.11.9"},
         {"key": "CONFIDENCE_THRESHOLD", "value": os.environ.get("CONFIDENCE_THRESHOLD", "0.50")},
+        # Live-connector secrets (empty when not configured — connector stays off).
+        {"key": "TELEGRAM_BOT_TOKEN", "value": os.environ.get("TELEGRAM_BOT_TOKEN", "")},
+        {"key": "CONNECTOR_SECRET", "value": os.environ.get("CONNECTOR_SECRET", "")},
     ]
     if not svc:
         print(f"creating web service {SVC_NAME} ...")

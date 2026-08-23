@@ -41,6 +41,12 @@ the suite against real Postgres.
 - **Capture** — "Teach the Brain": one click turns a resolved exception into
   retrievable, cited memory with full provenance. The Gaps dashboard is what
   the company most needs to write down, ranked by how often someone asked.
+- **Connect** — a live Telegram connector (standing in for WhatsApp — same
+  webhook mechanism, no Meta verification queue): the bot sits in a group
+  chat, buffers messages (PHI-redacted at the boundary), distills quiet
+  conversations into low-authority chat notes, captures vouched knowledge on
+  `/teach`, and answers `/ask` in the chat with citations. No exports, no
+  uploads. Setup: [docs/telegram-setup.md](docs/telegram-setup.md).
 
 ## Architecture
 
@@ -96,6 +102,7 @@ corpus/          114 synthetic knowledge objects, by team (see DATA.md)
   recipes/       the three shipped recipe definitions (YAML)
 app/
   adapters/      SourceAdapter interface: markdown, csv, slack_export, notion stub
+  connectors/    live sources: telegram webhook (ambient digest, /teach, /ask)
   redact.py      PHI stripping at ingest
   chunking.py    heading-aware chunks with contextual prefixes
   retrieval.py   hybrid lexical+vector, RRF, boosts, visibility
@@ -110,8 +117,9 @@ tests/           12 tests over real Postgres (mock LLM/embeddings)
 
 ## What I deliberately didn't build
 
-Live OAuth connectors (the adapter interface + typed Notion stub is the seam —
-a real connector is a ~50-line file), auth/SSO (doc-level visibility tags +
+Live **OAuth** connectors — Slack/Notion/Drive sync (the adapter interface +
+typed Notion stub is the seam, and the Telegram connector now proves the live
+path end-to-end; OAuth ones are a scope, not a design, question), auth/SSO (doc-level visibility tags +
 role switcher demonstrate the model), LangChain/LlamaIndex (I want to be able
 to explain every retrieval decision), a separate vector DB (Postgres already
 does rows + full-text + vectors), and fine-tuning (nothing here needs it).
