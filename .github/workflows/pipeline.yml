@@ -1,0 +1,171 @@
+name: pipeline
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      openai: ${{ steps.check.outputs.openai }}
+      render: ${{ steps.check.outputs.render }}
+    steps:
+      - id: check
+        run: |
+          echo "openai=${{ secrets.OPENAI_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+          echo "render=${{ secrets.RENDER_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: brain
+          POSTGRES_PASSWORD: brain
+          POSTGRES_DB: brain
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U brain" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://brain:brain@localhost:5432/brain_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -r requirements.txt pytest
+      - name: pytest (mock providers, real Postgres)
+        run: pytest -q 2>&1 | tee test-output.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: test-output, path: test-output.txt}
+
+  eval:
+    needs: [gate, test]
+    if: needs.gate.outputs.openai == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: brain
+          POSTGRES_PASSWORD: brain
+          POSTGRES_DB: brain
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U brain" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://brain:brain@localhost:5432/brain
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -r requirements.txt
+      - name: seed with real embeddings
+        run: python scripts/seed.py 2>&1 | tee seed-output.txt
+      - name: run eval (real embeddings + generation + LLM judge)
+        run: python eval/run_eval.py 2>&1 | tee eval-output.txt
+      - name: job summary
+        if: always()
+        run: |
+          echo "## Eval" >> "$GITHUB_STEP_SUMMARY"
+          cat eval/results/results.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: |
+            eval/results/
+            eval-output.txt
+            seed-output.txt
+
+  deploy:
+    needs: [gate, eval]
+    if: needs.gate.outputs.render == 'true'
+    runs-on: ubuntu-latest
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - name: provision + deploy on Render
+        run: python scripts/render_deploy.py 2>&1 | tee deploy-output.txt
+      - name: extract URL
+        run: grep -o 'RENDER_URL=.*' deploy-output.txt | tail -1 > deploy-url.txt && cat deploy-url.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deploy-output
+          path: |
+            deploy-output.txt
+            deploy-url.txt
+
+  report:
+    needs: [test, eval, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {path: artifacts}
+        continue-on-error: true
+      - name: assemble report
+        run: |
+          mkdir -p report
+          {
+            echo "# CI report — run ${{ github.run_number }} (${{ github.sha }})"
+            echo
+            echo "| job | result |"
+            echo "|---|---|"
+            echo "| test | ${{ needs.test.result }} |"
+            echo "| eval | ${{ needs.eval.result }} |"
+            echo "| deploy | ${{ needs.deploy.result }} |"
+            echo
+            echo "## Eval results"
+            cat artifacts/eval-results/eval/results/results.md 2>/dev/null || echo "_no eval results_"
+            echo
+            echo '## Eval output tail'
+            echo '```'
+            tail -60 artifacts/eval-results/eval-output.txt 2>/dev/null || true
+            echo '```'
+            echo
+            echo '## Seed output tail'
+            echo '```'
+            tail -10 artifacts/eval-results/seed-output.txt 2>/dev/null || true
+            echo '```'
+            echo
+            echo "## Deploy"
+            cat artifacts/deploy-output/deploy-url.txt 2>/dev/null || echo "_no deploy url_"
+            echo
+            echo '```'
+            tail -80 artifacts/deploy-output/deploy-output.txt 2>/dev/null || true
+            echo '```'
+            echo
+            echo '## Test output tail'
+            echo '```'
+            tail -40 artifacts/test-output/test-output.txt 2>/dev/null || true
+            echo '```'
+          } > report/report-${{ github.run_number }}.md
+          cp artifacts/eval-results/eval/results/results.json report/results-${{ github.run_number }}.json 2>/dev/null || true
+      - name: push to ci-reports branch
+        run: |
+          cd report
+          git init -q -b ci-reports
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git add -A
+          git commit -q -m "report for run ${{ github.run_number }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-reports
