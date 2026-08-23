@@ -1,0 +1,217 @@
+# Golden set — written from a user's perspective BEFORE retrieval tuning.
+# answerable: false = the Brain must refuse (and log a gap), not hallucinate.
+# expected_docs: retrieval is correct if any of these doc ids is in the top-5 docs.
+# expect_any: loose groundedness sanity — the answer should contain at least one.
+
+- id: ddca-perio-pooling
+  q: "Does Delta Dental of California count perio maintenance (D4910) against the cleaning frequency limit?"
+  role: everyone
+  answerable: true
+  expected_docs: [payer-playbook-ddca, slack-ops-payer-questions-1785812400]
+  expect_any: ["no longer", "4 per", "unpooled", "May 2026", "2026-05"]
+  note: "Planted contradiction — must prefer the post-May-2026 rule over the stale SOP."
+
+- id: metlife-rolling-year
+  q: "Is MetLife dental frequency calculated on a calendar year or a rolling year?"
+  role: everyone
+  answerable: true
+  expected_docs: [payer-playbook-metlife]
+  expect_any: ["rolling"]
+
+- id: guardian-frequency-history
+  q: "How do we verify D4910 frequency history for a Guardian member?"
+  role: everyone
+  answerable: true
+  expected_docs: [payer-playbook-guardian, resolution-ex-4103]
+  expect_any: ["voice", "call"]
+
+- id: aetna-srp-review
+  q: "What does Aetna's 'covered subject to review' mean on an SRP verification?"
+  role: everyone
+  answerable: true
+  expected_docs: [payer-playbook-aetna, resolution-ex-4104]
+  expect_any: ["charting"]
+
+- id: uhc-xray-bucket
+  q: "Can a member get both a panoramic and an FMX covered by UnitedHealthcare?"
+  role: everyone
+  answerable: true
+  expected_docs: [payer-playbook-uhc, resolution-ex-4105]
+  expect_any: ["shared", "either", "36"]
+
+- id: fep-cleanings
+  q: "How many cleanings per year does FEP BlueDental cover?"
+  role: everyone
+  answerable: true
+  expected_docs: [payer-playbook-fep]
+  expect_any: ["3", "three"]
+
+- id: ddca-exhausted-banner
+  q: "The DDCA portal shows 'benefits exhausted' but the member has secondary coverage — what should I do?"
+  role: everyone
+  answerable: true
+  expected_docs: [payer-playbook-ddca, resolution-ex-4111]
+  expect_any: ["claims-history", "claims history"]
+
+- id: priority-sla
+  q: "What is the SLA for verifying a same-day appointment?"
+  role: everyone
+  answerable: true
+  expected_docs: [priority-queue-policy]
+  expect_any: ["30"]
+
+- id: posting-roadmap
+  q: "When does payment posting ship and what does it depend on?"
+  role: everyone
+  answerable: true
+  expected_docs: [roadmap-2026]
+  expect_any: ["Q4", "claims"]
+
+- id: edi-retired
+  q: "Why did we retire the EDI-first verification approach?"
+  role: everyone
+  answerable: true
+  expected_docs: [feature-flags, objection-handling]
+  expect_any: ["shallow", "271", "history"]
+
+- id: claims-beta-bar
+  q: "What is the exit bar for the claims beta?"
+  role: everyone
+  answerable: true
+  expected_docs: [claims-beta-notes, roadmap-2026]
+  expect_any: ["90"]
+
+- id: metlife-mfa-firstofmonth
+  q: "Why do MetLife navigator logins fail on the first of the month?"
+  role: everyone
+  answerable: true
+  expected_docs: [incident-2026-041-metlife-mfa, payer-playbook-metlife]
+  expect_any: ["rotat", "MFA"]
+
+- id: captcha-policy
+  q: "What do we do when a payer portal starts showing CAPTCHAs?"
+  role: everyone
+  answerable: true
+  expected_docs: [incident-2026-055-uhc-captcha, rate-limit-policy, why-portal-scrapes-break]
+  expect_any: ["never", "bypass", "capacity", "rotate", "25"]
+
+- id: writeback-duplicates
+  q: "How do we prevent duplicate write-backs into a customer's PMS?"
+  role: everyone
+  answerable: true
+  expected_docs: [incident-2026-032-eaglesoft-writeback, pms-writeback-notes, architecture-overview]
+  expect_any: ["idempoten", "read-verify", "exactly-once"]
+
+- id: scrape-breakage
+  q: "What are the main reasons portal scrapes break?"
+  role: everyone
+  answerable: true
+  expected_docs: [why-portal-scrapes-break]
+  expect_any: ["DOM", "drift", "auth"]
+
+- id: growth-price
+  q: "What is the current Growth tier price per verification?"
+  role: everyone
+  answerable: true
+  expected_docs: [pricing-2026-06]
+  expect_any: ["0.85"]
+  note: "Second planted contradiction — the Nov 2025 sheet says $0.95; current sheet must win."
+
+- id: va-objection
+  q: "A prospect says they already use offshore VAs for verification — how do we respond?"
+  role: everyone
+  answerable: true
+  expected_docs: [objection-handling, case-study-summit]
+  expect_any: ["turnaround", "correct", "same-morning", "audit"]
+
+- id: summit-results
+  q: "What results did Summit Dental Partners get with us?"
+  role: everyone
+  answerable: true
+  expected_docs: [case-study-summit]
+  expect_any: ["38"]
+
+- id: lookback-audit
+  q: "What is a lookback audit and what do we need from the prospect to run one?"
+  role: everyone
+  answerable: true
+  expected_docs: [lookback-audit-spec]
+  expect_any: ["500", "de-identified", "deidentified"]
+
+- id: pto-days
+  q: "How many PTO days do employees get, and how many carry over?"
+  role: everyone
+  answerable: true
+  expected_docs: [pto-policy]
+  expect_any: ["20"]
+
+- id: parental-primary
+  q: "How long is parental leave for a primary caregiver?"
+  role: everyone
+  answerable: true
+  expected_docs: [parental-leave]
+  expect_any: ["16"]
+
+- id: phi-in-slack
+  q: "Can I paste payer portal output into Slack?"
+  role: everyone
+  answerable: true
+  expected_docs: [hipaa-compliance-overview, vendor-list, slack-general-1782961200]
+  expect_any: ["prohibit", "redact", "no", "queue tool"]
+
+- id: current-str
+  q: "What is our current straight-through rate, and what's the target?"
+  role: everyone
+  answerable: true
+  expected_docs: [standup-2026-08-18, glossary, exception-taxonomy]
+  expect_any: ["85.4", "92"]
+
+- id: aht-lookup-share
+  q: "How much of exception handle time goes to knowledge lookup?"
+  role: everyone
+  answerable: true
+  expected_docs: [time-study-2026-07]
+  expect_any: ["38", "2m55", "3 minutes", "2m 55"]
+
+- id: comp-band-leadership
+  q: "What is the compensation band for an L3 engineer in India?"
+  role: leadership
+  answerable: true
+  expected_docs: [comp-bands-fy2026]
+  expect_any: ["28", "42"]
+
+# ---- must refuse ----
+
+- id: humana-quirks
+  q: "What are Humana's eligibility verification quirks?"
+  role: everyone
+  answerable: false
+  note: "No Humana playbook exists — the gap is deliberate."
+
+- id: soc2-status
+  q: "What is our SOC 2 Type II status?"
+  role: everyone
+  answerable: false
+  note: "Compliance doc covers HIPAA/BAA only; SOC 2 is never mentioned."
+
+- id: clearinghouse-vendor
+  q: "Which clearinghouse vendor do we use for the claims module?"
+  role: everyone
+  answerable: false
+  note: "Claims docs say 'via clearinghouse' but never name the vendor."
+
+- id: comp-band-everyone
+  q: "What is the compensation band for an L3 engineer in India?"
+  role: everyone
+  answerable: false
+  note: "Same question as comp-band-leadership, wrong role — visibility must not leak."
+
+- id: q2-churn
+  q: "Which customer churned in Q2 2026 and why?"
+  role: everyone
+  answerable: false
+
+- id: offsite-2026
+  q: "When is the 2026 company offsite?"
+  role: everyone
+  answerable: false
