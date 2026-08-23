@@ -70,6 +70,31 @@ CREATE TABLE IF NOT EXISTS captures (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Live-connector state: the redacted message buffer and per-chat settings.
+-- Raw stream text is PHI-redacted BEFORE insert (see connectors/telegram.py).
+CREATE TABLE IF NOT EXISTS connector_messages (
+  id         BIGSERIAL PRIMARY KEY,
+  source     TEXT NOT NULL DEFAULT 'telegram',
+  chat_id    TEXT NOT NULL,
+  msg_id     TEXT NOT NULL,
+  user_name  TEXT,
+  text       TEXT NOT NULL,
+  sent_at    TIMESTAMPTZ NOT NULL,
+  processed  BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (source, chat_id, msg_id)
+);
+CREATE INDEX IF NOT EXISTS connector_messages_chat_idx
+  ON connector_messages (chat_id, processed);
+
+CREATE TABLE IF NOT EXISTS connector_chats (
+  chat_id    TEXT PRIMARY KEY,
+  source     TEXT NOT NULL DEFAULT 'telegram',
+  title      TEXT,
+  team       TEXT NOT NULL DEFAULT 'ops',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS query_log (
   id         BIGSERIAL PRIMARY KEY,
   q          TEXT NOT NULL,

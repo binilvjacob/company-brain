@@ -35,7 +35,8 @@ def conn():
 
 @pytest.fixture(autouse=True)
 def clean(conn):
-    conn.execute("TRUNCATE documents, gaps, recipes, query_log CASCADE")
+    conn.execute("TRUNCATE documents, gaps, recipes, query_log, "
+                 "connector_messages, connector_chats CASCADE")
     yield
 
 

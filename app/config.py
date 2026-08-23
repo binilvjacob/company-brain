@@ -45,6 +45,15 @@ STALENESS_WARN_DAYS = int(env("STALENESS_WARN_DAYS", "120"))
 CHUNK_TARGET_TOKENS = int(env("CHUNK_TARGET_TOKENS", "800"))
 CHUNK_OVERLAP_RATIO = float(env("CHUNK_OVERLAP_RATIO", "0.15"))
 
+# Live connectors (v1: Telegram — app/connectors/telegram.py). The bot token
+# enables the connector; CONNECTOR_SECRET authenticates both the inbound
+# webhook (Telegram echoes it in a header) and POST /sync/run.
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
+CONNECTOR_SECRET = env("CONNECTOR_SECRET")
+TELEGRAM_DEFAULT_TEAM = env("TELEGRAM_DEFAULT_TEAM", "ops")
+DIGEST_QUIET_MINUTES = int(env("DIGEST_QUIET_MINUTES", "30"))
+DIGEST_MIN_MESSAGES = int(env("DIGEST_MIN_MESSAGES", "3"))
+
 # Authority: an SOP should outrank a Slack message at equal relevance.
 DOC_TYPE_AUTHORITY = {
     "sop": 1.0,
@@ -58,6 +67,7 @@ DOC_TYPE_AUTHORITY = {
     "glossary": 0.8,
     "notes": 0.7,
     "slack_thread": 0.6,
+    "chat_thread": 0.6,   # ambient Telegram/WhatsApp digests — same trust tier as Slack
 }
 
 TEAMS = ["ops", "product", "eng", "gtm", "ga", "meta"]

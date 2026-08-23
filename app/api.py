@@ -1,16 +1,20 @@
 """Brain API + UI. FastAPI's /docs page doubles as the platform demo surface."""
 import json
+import os
+import secrets as pysecrets
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from app import config, db
 from app.answer import ask
 from app.capture import list_gaps, teach
+from app.connectors import telegram as tg
 from app.ingest import ingest_document
 from app.models import KnowledgeObject
 from app.recipes import get_recipe, list_recipes, run_recipe, save_recipe
@@ -77,9 +81,53 @@ class RecipeCreateBody(BaseModel):
     created_by: str = "api"
 
 
+@app.on_event("startup")
+def _wire_connectors():
+    # On Render, RENDER_EXTERNAL_URL is set by the platform — a deploy with the
+    # bot token configured registers its own webhook. Zero manual wiring.
+    base = os.environ.get("RENDER_EXTERNAL_URL", "").rstrip("/")
+    if tg.enabled() and base:
+        tg.register_webhook(base)
+
+
 @app.get("/healthz")
 def healthz():
-    return {"ok": True, **db.counts(_conn())}
+    return {"ok": True, "connectors": {"telegram": tg.enabled()}, **db.counts(_conn())}
+
+
+# --------------------------------------------------------------- connectors
+
+def _secret_ok(given: str) -> bool:
+    return bool(config.CONNECTOR_SECRET) and \
+        pysecrets.compare_digest(given or "", config.CONNECTOR_SECRET)
+
+
+@app.post("/hooks/telegram")
+async def telegram_hook(request: Request):
+    """Inbound updates from Telegram. Auth: Telegram echoes the secret_token we
+    set at webhook registration in a header — anything else is rejected."""
+    if not tg.enabled():
+        return JSONResponse({"ok": False, "detail": "connector not configured"},
+                            status_code=503)
+    if not _secret_ok(request.headers.get("x-telegram-bot-api-secret-token", "")):
+        return JSONResponse({"ok": False}, status_code=403)
+    update = await request.json()
+    try:
+        tg.handle_update(_conn(), update)
+    except Exception:  # noqa: BLE001 — ack anyway so Telegram doesn't retry forever
+        traceback.print_exc()
+    return {"ok": True}
+
+
+@app.post("/sync/run")
+def sync_run(request: Request):
+    """Scheduled pull/flush point. The keepwarm cron hits this every 10 minutes,
+    which gives free-tier scheduled sync with no worker process: today it
+    flushes quiet chats into ambient digests; Drive/Gmail pollers slot in here."""
+    if not _secret_ok(request.headers.get("x-sync-token", "")):
+        return JSONResponse({"ok": False}, status_code=403)
+    digests = tg.run_ambient_digest(_conn()) if tg.enabled() else 0
+    return {"ok": True, "digests": digests}
 
 
 @app.post("/search")
