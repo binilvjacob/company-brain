@@ -1,0 +1,104 @@
+{
+  "export_note": "Standard Slack export shape, trimmed to threads. All synthetic — see DATA.md.",
+  "channels": [
+    {
+      "name": "ops-payer-questions",
+      "team": "ops",
+      "threads": [
+        {
+          "thread_id": "1785812400",
+          "topic": "DDCA D4910 no longer pooled with D1110 — confirmed with payer",
+          "entities": ["Delta Dental of California", "D4910", "D1110"],
+          "messages": [
+            {"user": "marcus", "ts": "1785812400", "text": "Weird one: DDCA portal shows a member with 2 cleanings YTD but the frequency panel says D4910 has 4 remaining. SOP math says 0 remaining (pooled 2/yr). Portal bug or rule change?"},
+            {"user": "anika", "ts": "1785813000", "text": "Seeing the same on two members this week. Both have SRP history."},
+            {"user": "priya", "ts": "1785816600", "text": "Called DDCA provider services. NOT a bug: effective 2026-05-01 they unpooled D4910 from D1110. New rule: D4910 is 4 per rolling 12 months when there is documented SRP (D4341/D4342) in the past 24 months. D1110 stays 2 per calendar year. Written confirmation ref DD-2026-081."},
+            {"user": "priya", "ts": "1785816720", "text": "SOP v2.3 still shows the old pooled example — do NOT use it for dates of service after May 1. I'll update the playbook this week; until then this thread is the source."},
+            {"user": "marcus", "ts": "1785817000", "text": "That explains three corrections this month. For pre-May DOS the pooled math still applies, right?"},
+            {"user": "priya", "ts": "1785817200", "text": "Correct — pooled for DOS before 2026-05-01, new rule after. Portal history view still displays pooled counts for old dates which is what makes it confusing."}
+          ]
+        },
+        {
+          "thread_id": "1780106400",
+          "topic": "Guardian IVR menu changed — new press-through path",
+          "entities": ["Guardian", "IVR"],
+          "messages": [
+            {"user": "rohan", "ts": "1780106400", "text": "Guardian IVR changed. Old path (1-3-2) now dead-ends at claims status. Burned 20 minutes finding the new route."},
+            {"user": "marcus", "ts": "1780108200", "text": "New path that works: 2 then 1 then 3 then say 'eligibility'. ~8 min to a rep this morning."},
+            {"user": "tomas", "ts": "1780110000", "text": "Voice agent traversal success dropped to 61% on Guardian overnight — that confirms it. Re-mapping from a full-menu recording now; manual-dial mode for Guardian until the canary passes."},
+            {"user": "rohan", "ts": "1780113600", "text": "Call script doc updated with the new path and a note that the old one dead-ends."}
+          ]
+        },
+        {
+          "thread_id": "1772071200",
+          "topic": "FEP accumulators look wrong — plan year vs calendar year",
+          "entities": ["FEP", "accumulators"],
+          "messages": [
+            {"user": "anika", "ts": "1772071200", "text": "FEP member shows 1 of 3 cleanings used but the PMS ledger clearly has 2 this calendar year. Which do we trust?"},
+            {"user": "marcus", "ts": "1772074800", "text": "Check the accumulator period label — if the member switched options at open season FEP displays PLAN-year counts. One of those visits probably sits in the prior plan year. Portal is right, your calendar-year assumption is what's off."},
+            {"user": "anika", "ts": "1772075400", "text": "Yep, period label says plan year starting January. And TIL FEP does 3 cleanings not 2."},
+            {"user": "marcus", "ts": "1772076000", "text": "FEP is generous like that. Playbook has both quirks — the plan-year one keeps biting new folks, worth a bootcamp slide."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "eng-incidents",
+      "team": "eng",
+      "threads": [
+        {
+          "thread_id": "1783566000",
+          "topic": "UHC CAPTCHA spike — INC-2026-055 running thread",
+          "entities": ["UnitedHealthcare", "CAPTCHA", "INC-2026-055"],
+          "messages": [
+            {"user": "dana", "ts": "1783566000", "text": "UHC flag rate 41% (baseline 12%). CAPTCHA triggering at ~30 req/hr/IP, previously ~90. Declaring INC-2026-055, P2 — voice fallback holding, throughput is the problem."},
+            {"user": "nakul", "ts": "1783567800", "text": "To be explicit for anyone new: we do not solve CAPTCHAs, ever. Shape capacity instead — widen the pool, cap per-IP with jitter, and batch per member like the MetLife pattern."},
+            {"user": "dana", "ts": "1783580000", "text": "Batching rewrite cut requests per verification 2.3x. Capped at 25/hr/IP. Flag rate 19% and falling."},
+            {"user": "dana", "ts": "1783652400", "text": "Back to 13% flag rate. Postmortem drafted. Real fix filed with provider relations: API/EDI accumulator access — the portal was never meant for this volume."}
+          ]
+        },
+        {
+          "thread_id": "1786496400",
+          "topic": "Claims beta: x-ray attachment rejections root-caused",
+          "entities": ["claims", "attachments"],
+          "messages": [
+            {"user": "tomas", "ts": "1786496400", "text": "The two payers bouncing our x-ray attachments both silently re-encode uploads; our checksum validation then flags the response as tampered and we retry, which they read as duplicates. Fix: validate on their post-encode format. Patch in review."},
+            {"user": "lena", "ts": "1786498200", "text": "That's 38% of beta rejections. If this lands this week the 90% first-pass bar is realistic for the Aug 24 week."},
+            {"user": "tomas", "ts": "1786500000", "text": "Canary on 20 claims tomorrow, full beta Thursday if clean."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gtm-wins",
+      "team": "gtm",
+      "threads": [
+        {
+          "thread_id": "1776391200",
+          "topic": "Summit 6-month numbers are in — denials down 38%",
+          "entities": ["Summit Dental Partners"],
+          "messages": [
+            {"user": "chris", "ts": "1776391200", "text": "Summit QBR done. 6-month numbers: backlog 3.2 days -> same-morning, eligibility denials down 38% (9.8 -> 6.1%), 2 FTEs redeployed. VP RCM agreed to be a reference for DSO deals."},
+            {"user": "jofin", "ts": "1776393000", "text": "The line worth keeping from that call: 'my team trusts the green ones because the yellow ones exist.' That is the whole product thesis in one sentence — use it."},
+            {"user": "chris", "ts": "1776394800", "text": "Adding it to the case study. Also flagging: their acquisition pipeline means a Scale-tier conversation at renewal — Lena, claims beta expansion interest too."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "general",
+      "team": "meta",
+      "threads": [
+        {
+          "thread_id": "1782961200",
+          "topic": "Reminder: no PHI in Slack (yes, pasted portal screenshots count)",
+          "entities": ["PHI", "compliance"],
+          "messages": [
+            {"user": "maya", "ts": "1782961200", "text": "Monthly reminder because it keeps almost-happening: PHI does not go in Slack. Pasted portal output with member IDs counts. Case discussion belongs in the queue tool; reference cases by ID here."},
+            {"user": "priya", "ts": "1782962400", "text": "Ops folks: redact before pasting, and if you slip, tell Maya same-day — deletion and log, no blame the first time. The near-miss process exists so this stays boring."}
+          ]
+        }
+      ]
+    }
+  ]
+}

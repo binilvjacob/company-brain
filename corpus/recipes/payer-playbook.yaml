@@ -1,0 +1,19 @@
+slug: payer-playbook
+name: Payer Playbook Lookup
+description: Everything ops knows about one payer, in one cited card — the lookup a specialist does dozens of times a day.
+inputs:
+  - {name: payer, label: "Payer name", type: text, placeholder: "e.g. Delta Dental of California"}
+  - {name: procedure, label: "Procedure / CDT code", type: text, optional: true, placeholder: "e.g. D4910"}
+retrieval:
+  query: "{payer} {procedure} eligibility verification rules frequency limitations waiting periods clauses portal quirks escalation"
+  filters:
+    team: [ops, product]
+  top_k: 12
+prompt: |
+  Build a payer playbook card for {payer}{procedure, focused on }. Sections:
+  **Portal & access quirks** · **Frequency limitations** · **Clauses & waiting
+  periods** · **Common exception reasons** · **Escalation path** · **Last
+  verified**. Cite every line. If a section has no source in context, write
+  "Not documented — gap." Prefer the most recently updated source where rules
+  conflict and say when the rule changed.
+output: card

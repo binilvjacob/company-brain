@@ -1,0 +1,31 @@
+slug: triage-assist
+name: Exception Triage Assist
+description: Paste a flagged verification — get the governing rule, the most similar past resolutions with what the specialist decided, and a suggested decision. The 15% queue, made faster with the company's own memory.
+inputs:
+  - {name: payer, label: "Payer", type: text, placeholder: "e.g. Delta Dental of California"}
+  - {name: procedure, label: "Procedure (CDT)", type: text, placeholder: "e.g. D4910"}
+  - {name: flag_reason, label: "Flag reason", type: text, placeholder: "e.g. frequency history conflict"}
+  - {name: portal_output, label: "Portal / source output", type: textarea, optional: true, placeholder: "Paste the relevant portal output (identifiers are redacted at ingest)"}
+retrieval:
+  query: "{payer} {procedure} {flag_reason} frequency rule clause verification {portal_output}"
+  filters:
+    team: [ops, product]
+  top_k: 8
+  include_similar:
+    doc_type: resolution
+    top_k: 3
+prompt: |
+  Triage this flagged verification: payer {payer}, procedure {procedure},
+  flag reason: {flag_reason}. Portal output: {portal_output}
+
+  Produce, with citations on every line:
+  1. **Governing rule** — the current rule that decides this case (note the
+     effective date if it changed recently; prefer newer sources).
+  2. **Similar past resolutions** — for each similar resolution in context:
+     what the specialist decided and their reasoning, in one line each.
+  3. **Suggested decision** — resolved_confirmed / resolved_corrected /
+     escalated_payer_call, with the exact reasoning a specialist should verify.
+  4. **Confidence & what to double-check** — one line.
+  If the rule is not in context, say so explicitly and recommend escalation
+  instead of guessing.
+output: card

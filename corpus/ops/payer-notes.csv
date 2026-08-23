@@ -1,0 +1,24 @@
+payer,topic,note,added_by,updated_at
+Delta Dental of California,benefits exhausted banner,"Banner fires falsely when secondary coverage on file. Check claims-history tab for true accumulators. Reported to DDCA 2026-03, still open.",anika,2026-03-29
+Delta Dental of California,PDF lag,"Benefits summary PDF lags plan changes 24-48h. Plan changed this week = trust eligibility API view, not PDF.",marcus,2026-01-22
+Delta Dental of California,D4910 rule change,"Effective 2026-05-01: D4910 unpooled from D1110. 4/12mo with SRP in past 24mo. Written confirmation ref DD-2026-081.",priya,2026-08-06
+MetLife,session timeout,"Hard 8-minute portal session timeout. Batch all member questions into one session or output truncates.",rohan,2025-11-30
+MetLife,rolling year,"ALL frequencies rolling 12mo, never calendar year. #1 miscount source for members switching from calendar-year payers.",marcus,2026-02-10
+MetLife,MFA rotation,"Portal MFA secret rotates on the 1st monthly. Navigator failures on the 1st morning are expected until credential job runs (INC-2026-041).",dana,2026-06-04
+Cigna,portal split,"DPPO and DHMO are separate portals; member ID format does not tell you which. Check plan type via eligibility API first.",anika,2025-10-18
+Cigna,DHMO capitation,"DHMO capitation schedules are PDF-only, not machine-readable. Procedure-level DHMO questions always queue — by design, not a bug.",priya,2026-01-15
+Cigna,takeover perio history,"Perio history from another payer does NOT qualify the 4x D4910 rule. Needs charting via provider fax; log confirmation number.",marcus,2026-07-16
+Aetna,first of month,"Bulk eligibility endpoint serves stale group numbers on the 1st. Re-run group-sensitive verifications on the 2nd.",rohan,2026-05-02
+Aetna,SRP charting,"'Covered subject to review' on SRP = charting ≤6mo requirement, NOT approval. Tell the practice explicitly.",marcus,2026-03-14
+Aetna,voice window,"Call 7-9am ET: 6 min average hold. Midday: 22 min. Scheduler batches Aetna calls into morning window.",priya,2025-12-02
+Aetna,crown dates,"5-year clause measured from SEAT date but their warning engine uses PREP date. Spurious 'too soon' warnings — check both dates.",rohan,2026-07-28
+UnitedHealthcare,shared xray bucket,"D0330 pano and D0210 FMX share ONE 36-month bucket despite showing as separate portal line items. #1 UHC correction.",anika,2026-04-22
+UnitedHealthcare,captcha,"CAPTCHA above ~30 req/hr/IP. Fleet rotates at 25 since INC-2026-055. CAPTCHA flags in queue = rotation drift, page eng.",dana,2026-07-12
+UnitedHealthcare,nightly accumulators,"Portal accumulators update nightly. Same-day treatment = voice for current counts.",rohan,2026-06-03
+Guardian,no history in portal,"Portal exposes provisions only, never frequency history. All history questions are voice calls. Largest voice-minutes driver — structural.",marcus,2025-11-08
+Guardian,fluoride age,"D1206 fluoride covered to age 18 (most payers stop at 14). Pediatric practices love this — put it in the note.",anika,2026-02-12
+Guardian,MTC strictness,"Strictest missing tooth clause of top payers. All plan types, no continuous-coverage waiver. Undated extractions = flag as MTC-risk.",marcus,2026-04-08
+Guardian,IVR change,"IVR menu changed 2026-05. New path: 2-1-3-say 'eligibility'. Old path dead-ends at claims status.",rohan,2026-05-30
+BCBS Federal Employee Program,plan year,"Accumulators display in PLAN year for members who switched options at open season. Verify the period label before reading counts.",rohan,2026-02-26
+BCBS Federal Employee Program,three cleanings,"D1110 is 3 per calendar year, not 2. Also Standard option has NO annual max on in-network preventive/basic — plan design, quote with option name.",anika,2026-03-05
+BCBS Federal Employee Program,COB desk,"COB questions are a voice-only warm transfer, 20+ minutes. Batch them; never take one in the priority lane if avoidable.",marcus,2026-06-09

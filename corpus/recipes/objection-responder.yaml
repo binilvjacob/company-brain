@@ -1,0 +1,23 @@
+slug: objection-responder
+name: GTM Objection Responder
+description: Paste a prospect objection — get the reframe, the proof points with numbers, and the case study to cite. Same Brain, different team.
+inputs:
+  - {name: objection, label: "Prospect objection", type: textarea, placeholder: "e.g. We already have offshore VAs doing verification for cheaper"}
+  - {name: prospect_type, label: "Prospect type", type: text, optional: true, placeholder: "e.g. 20-location DSO"}
+retrieval:
+  query: "objection {objection} pricing competitive case study proof {prospect_type}"
+  filters:
+    team: [gtm, product]
+  top_k: 10
+prompt: |
+  A {prospect_type} prospect raised this objection: "{objection}"
+
+  Produce a response brief for the AE, cited on every line:
+  1. **The reframe** — acknowledge, then shift the frame (use our documented
+     objection-handling approach, not generic sales advice).
+  2. **Proof points** — specific numbers from case studies or product docs.
+  3. **What to send after the call** — the case study or asset to attach, and
+     whether the lookback audit is the right next ask.
+  4. **Honest boundaries** — anything we should NOT claim (unsupported
+     programs, thin-ROI segments). If the corpus lacks a good answer, say so.
+output: card
