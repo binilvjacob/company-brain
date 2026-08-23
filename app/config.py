@@ -34,8 +34,12 @@ W_AUTHORITY = float(env("W_AUTHORITY", "0.15"))
 W_TEAM_MATCH = float(env("W_TEAM_MATCH", "0.10"))
 FRESHNESS_HALF_LIFE_DAYS = float(env("FRESHNESS_HALF_LIFE_DAYS", "180"))
 
-# Confidence gate: below this the Brain refuses and logs a gap instead of guessing.
-CONFIDENCE_THRESHOLD = float(env("CONFIDENCE_THRESHOLD", "0.35"))
+# Confidence gate: below this the Brain refuses and logs a gap instead of
+# guessing. 0.50 is the measured operating point from the eval threshold sweep
+# (real embeddings): lowest answerable-question confidence 0.594, so 0.50
+# gates 5/6 unanswerables while wrongly refusing none. Calibrated on 31
+# questions — treat as a starting point, not proof.
+CONFIDENCE_THRESHOLD = float(env("CONFIDENCE_THRESHOLD", "0.50"))
 STALENESS_WARN_DAYS = int(env("STALENESS_WARN_DAYS", "120"))
 
 CHUNK_TARGET_TOKENS = int(env("CHUNK_TARGET_TOKENS", "800"))

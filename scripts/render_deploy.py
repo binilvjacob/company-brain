@@ -86,7 +86,7 @@ def ensure_service(oid: str, database_url: str) -> tuple[dict, str | None]:
         {"key": "DATABASE_URL", "value": database_url},
         {"key": "OPENAI_API_KEY", "value": OPENAI_KEY},
         {"key": "PYTHON_VERSION", "value": "3.11.9"},
-        {"key": "CONFIDENCE_THRESHOLD", "value": os.environ.get("CONFIDENCE_THRESHOLD", "0.35")},
+        {"key": "CONFIDENCE_THRESHOLD", "value": os.environ.get("CONFIDENCE_THRESHOLD", "0.50")},
     ]
     if not svc:
         print(f"creating web service {SVC_NAME} ...")

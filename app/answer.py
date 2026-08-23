@@ -28,6 +28,10 @@ Answer ONLY from the numbered context blocks. Rules:
   and cite both.
 - If the context does not contain the answer, set can_answer to false. Never
   guess. An honest refusal is a correct answer.
+- The support must be about the SPECIFIC entity asked about. If the question
+  names a payer, customer, vendor, or person and the context only covers
+  OTHER entities of the same kind, set can_answer to false — do not produce
+  a meta-answer like "this is not documented" with can_answer true.
 - Keep answers tight: 2-6 sentences, markdown, no preamble.
 Return JSON: {"can_answer": bool, "answer_markdown": str, "citations": [int],
 "staleness_note": str|null, "reason": str|null}"""
