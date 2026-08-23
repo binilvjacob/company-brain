@@ -1,0 +1,23 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: brain
+      POSTGRES_PASSWORD: brain
+      POSTGRES_DB: brain
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brain"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://brain:brain@db:5432/brain
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # With no key the Brain runs in mock mode: retrieval is real, generation is canned.
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy

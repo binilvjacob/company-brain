@@ -1,0 +1,88 @@
+"""Central configuration. Everything tunable lives here, driven by env vars."""
+import os
+
+
+def env(key: str, default: str = "") -> str:
+    return os.environ.get(key, default)
+
+
+DATABASE_URL = env("DATABASE_URL", "postgresql://brain:brain@127.0.0.1:5432/brain")
+
+# Providers: "openai" for real calls, "mock" for deterministic offline behaviour
+# (tests, local dev without a key). The mock embedder is a hashed bag-of-words,
+# so lexical overlap still produces usable similarity in tests.
+EMBEDDINGS_PROVIDER = env("EMBEDDINGS_PROVIDER", "openai" if env("OPENAI_API_KEY") else "mock")
+LLM_PROVIDER = env("LLM_PROVIDER", "openai" if env("OPENAI_API_KEY") else "mock")
+
+OPENAI_API_KEY = env("OPENAI_API_KEY")
+EMBEDDING_MODEL = env("EMBEDDING_MODEL", "text-embedding-3-small")
+EMBEDDING_DIM = 1536
+GENERATION_MODEL = env("GENERATION_MODEL", "gpt-4o-mini")
+
+# Retrieval knobs (values re-validated by `make eval`; see WRITEUP.md).
+CANDIDATES_PER_ARM = int(env("CANDIDATES_PER_ARM", "40"))
+TOP_K = int(env("TOP_K", "10"))
+RRF_K = int(env("RRF_K", "60"))
+W_FRESHNESS = float(env("W_FRESHNESS", "0.012"))
+W_AUTHORITY = float(env("W_AUTHORITY", "0.008"))
+W_TEAM_MATCH = float(env("W_TEAM_MATCH", "0.006"))
+FRESHNESS_HALF_LIFE_DAYS = float(env("FRESHNESS_HALF_LIFE_DAYS", "180"))
+
+# Confidence gate: below this the Brain refuses and logs a gap instead of guessing.
+CONFIDENCE_THRESHOLD = float(env("CONFIDENCE_THRESHOLD", "0.35"))
+STALENESS_WARN_DAYS = int(env("STALENESS_WARN_DAYS", "120"))
+
+CHUNK_TARGET_TOKENS = int(env("CHUNK_TARGET_TOKENS", "800"))
+CHUNK_OVERLAP_RATIO = float(env("CHUNK_OVERLAP_RATIO", "0.15"))
+
+# Authority: an SOP should outrank a Slack message at equal relevance.
+DOC_TYPE_AUTHORITY = {
+    "sop": 1.0,
+    "playbook": 0.95,
+    "policy": 0.9,
+    "prd": 0.9,
+    "runbook": 0.9,
+    "spec": 0.9,
+    "resolution": 0.85,
+    "case_study": 0.85,
+    "glossary": 0.8,
+    "notes": 0.7,
+    "slack_thread": 0.6,
+}
+
+TEAMS = ["ops", "product", "eng", "gtm", "ga", "meta"]
+ROLES = ["everyone", "ops", "leadership"]
+
+# Gap routing: which human owns unanswered questions for a team.
+TEAM_OWNER = {
+    "ops": "priya",
+    "product": "lena",
+    "eng": "nakul",
+    "gtm": "chris",
+    "ga": "maya",
+    "meta": "priya",
+}
+
+# USD per 1M tokens (prices as listed 2026-08; used for the cost-per-query metric).
+PRICES = {
+    "text-embedding-3-small": {"in": 0.02, "out": 0.0},
+    "gpt-4o-mini": {"in": 0.15, "out": 0.60},
+}
+
+ACRONYMS = {
+    "ARC": "Accelerated Revenue Cycle",
+    "STR": "straight-through rate",
+    "PMS": "practice management system",
+    "COB": "coordination of benefits",
+    "SRP": "scaling and root planing",
+    "EOB": "explanation of benefits",
+    "FMX": "full mouth x-rays",
+    "AHT": "average handle time",
+    "DSO": "dental support organization",
+    "RCM": "revenue cycle management",
+    "HITL": "human in the loop",
+    "MTC": "missing tooth clause",
+    "DDCA": "Delta Dental of California",
+    "FEP": "Federal Employee Program BlueDental",
+    "UHC": "UnitedHealthcare",
+}
