@@ -28,6 +28,9 @@ from app.retrieval import confidence, search  # noqa: E402
 
 ROOT = Path(__file__).parent
 JUDGE_PROMPT = """You are grading a RAG answer for groundedness.
+Today's date is {today}. Judge ONLY whether the cited chunks support the
+answer's claims — never against your own world knowledge, sense of time, or
+training data. A date being after your knowledge cutoff is not a failure.
 Question: {q}
 Answer: {answer}
 Cited source chunks:
@@ -81,9 +84,11 @@ def run() -> dict:
                             "SELECT text FROM chunks WHERE id = %s",
                             (c["chunk_id"],)).fetchone()["text"]
                         for c in out["citations"])
+                    from datetime import date
                     judge = generate_json(
                         "You grade answers strictly. JSON only.",
-                        JUDGE_PROMPT.format(q=item["q"], answer=text, chunks=full_chunks))
+                        JUDGE_PROMPT.format(q=item["q"], answer=text,
+                                            chunks=full_chunks, today=date.today()))
                     row["grounded"] = bool(judge.get("grounded"))
                     row["unsupported_claim"] = judge.get("unsupported_claim")
                 else:
