@@ -117,8 +117,22 @@ jobs:
             deploy-output.txt
             deploy-url.txt
 
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - name: smoke the live site (every demo path)
+        shell: bash
+        run: python scripts/smoke_live.py 2>&1 | tee smoke-output.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: smoke-output, path: smoke-output.txt}
+
   report:
-    needs: [test, eval, deploy]
+    needs: [test, eval, deploy, smoke]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -137,6 +151,7 @@ jobs:
             echo "| test | ${{ needs.test.result }} |"
             echo "| eval | ${{ needs.eval.result }} |"
             echo "| deploy | ${{ needs.deploy.result }} |"
+            echo "| smoke | ${{ needs.smoke.result }} |"
             echo
             echo "## Eval results"
             cat artifacts/eval-results/eval/results/results.md 2>/dev/null || echo "_no eval results_"
@@ -149,6 +164,11 @@ jobs:
             echo '## Seed output tail'
             echo '```'
             tail -10 artifacts/eval-results/seed-output.txt 2>/dev/null || true
+            echo '```'
+            echo
+            echo "## Live smoke"
+            echo '```'
+            cat artifacts/smoke-output/smoke-output.txt 2>/dev/null || echo "no smoke output"
             echo '```'
             echo
             echo "## Deploy"
