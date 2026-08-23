@@ -69,10 +69,15 @@ def run() -> dict:
                 row["expect_hit"] = (any(e.lower() in text.lower() for e in expect_any)
                                      if expect_any else None)
                 if config.LLM_PROVIDER == "openai":
-                    chunks = "\n\n".join(
-                        f"[{c['n']}] {c['title']} > {c['heading']}" for c in out["citations"])
+                    # The judge must see exactly what the generator saw: the
+                    # context blocks include title/heading/metadata lines, and
+                    # facts sometimes live there (e.g. a pricing sheet's
+                    # effective date in its title). Judging on bare chunk text
+                    # produced a false "ungrounded" — measurement bug, fixed.
                     full_chunks = "\n\n".join(
-                        f"[{c['n']}] " + conn.execute(
+                        f"[{c['n']}] ({c['doc_type']}, updated {c['updated_at']})\n"
+                        f"{c['title']}" + (f" > {c['heading']}" if c['heading'] else "") + "\n"
+                        + conn.execute(
                             "SELECT text FROM chunks WHERE id = %s",
                             (c["chunk_id"],)).fetchone()["text"]
                         for c in out["citations"])
