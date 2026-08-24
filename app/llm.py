@@ -44,7 +44,10 @@ def generate_json(system: str, user: str) -> dict:
         raw = _mock_generate(system, user)
     else:
         from openai import OpenAI
-        client = OpenAI(api_key=config.OPENAI_API_KEY)
+        # Bounded, always: the library default timeout is 600s with retries —
+        # one hung request would stall a caller for minutes (and, before the
+        # threadpool fix in api.py, stalled the whole event loop with it).
+        client = OpenAI(api_key=config.OPENAI_API_KEY, timeout=30.0, max_retries=1)
         resp = client.chat.completions.create(
             model=config.GENERATION_MODEL,
             temperature=0.1,

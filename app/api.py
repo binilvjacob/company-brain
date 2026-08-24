@@ -11,6 +11,7 @@ from fastapi import BackgroundTasks, FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from app import config, db
 from app.answer import ask
@@ -120,7 +121,10 @@ async def telegram_hook(request: Request):
         return JSONResponse({"ok": False}, status_code=403)
     update = await request.json()
     try:
-        tg.handle_update(_conn(), update)
+        # Threadpool, never the event loop: handling can include LLM calls
+        # (ambient digest, /ask). Sync work on the loop would freeze every
+        # async endpoint — Slack's 3-second slash ack was the first casualty.
+        await run_in_threadpool(lambda: tg.handle_update(_conn(), update))
     except Exception:  # noqa: BLE001 — ack anyway so Telegram doesn't retry forever
         traceback.print_exc()
     return {"ok": True}
@@ -191,7 +195,7 @@ async def slack_commands(request: Request, background_tasks: BackgroundTasks):
         return denied
     form = dict(urllib.parse.parse_qsl(body.decode()))
     try:
-        ack, work = sl.handle_command(_conn(), form)
+        ack, work = await run_in_threadpool(lambda: sl.handle_command(_conn(), form))
     except Exception:  # noqa: BLE001 — ack anyway; Slack shows raw 500s to users
         traceback.print_exc()
         return {"response_type": "ephemeral", "text": "Something went wrong — try again."}
@@ -293,7 +297,7 @@ async def ui_recipe_run(request: Request, slug: str):
     form = dict(await request.form())
     role = form.pop("role", "everyone")
     recipe = get_recipe(_conn(), slug)
-    result = run_recipe(_conn(), slug, form, role=role)
+    result = await run_in_threadpool(lambda: run_recipe(_conn(), slug, form, role=role))
     return _page(request, "partials/recipe_result.html", r=result, recipe=recipe, inputs=form)
 
 

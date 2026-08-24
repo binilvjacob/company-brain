@@ -6,6 +6,7 @@ payer, triage recipe returning past resolutions, and every UI page serving.
 """
 import json
 import sys
+import time
 import urllib.request
 from pathlib import Path
 
@@ -106,6 +107,22 @@ if health.get("connectors", {}).get("slack"):
         check("slack: events auth enforced", False, "unsigned call accepted")
     except urllib.error.HTTPError as e:
         check("slack: events auth enforced", e.code == 403, f"status={e.code}")
+    # The slash-command endpoint must answer fast (Slack voids commands at 3s;
+    # a stalled event loop shows up here long before a user sees it).
+    t0 = time.monotonic()
+    try:
+        req = urllib.request.Request(
+            f"{URL}/hooks/slack/commands", data=b"command=/ask&text=smoke",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST")
+        urllib.request.urlopen(req, timeout=10)
+        check("slack: commands auth enforced", False, "unsigned command accepted")
+    except urllib.error.HTTPError as e:
+        took = time.monotonic() - t0
+        check("slack: commands auth enforced", e.code == 403, f"status={e.code}")
+        check("slack: commands ack under 3s", took < 3.0, f"{took:.2f}s")
+    except Exception as e:  # noqa: BLE001 — timeout = the event-loop stall bug
+        check("slack: commands auth enforced", False, str(e))
 else:
     print("SKIP  slack checks (connector not configured on this deploy)")
 

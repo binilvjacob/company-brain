@@ -41,7 +41,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
         return _mock_embed(texts)
 
     from openai import OpenAI
-    client = OpenAI(api_key=config.OPENAI_API_KEY)
+    client = OpenAI(api_key=config.OPENAI_API_KEY, timeout=30.0, max_retries=1)
     out: list[list[float]] = []
     for i in range(0, len(texts), 100):
         batch = [t[:8000] for t in texts[i:i + 100]]
