@@ -1,0 +1,568 @@
+{
+  "summary": {
+    "provider": {
+      "embeddings": "openai",
+      "llm": "openai",
+      "threshold": 0.5
+    },
+    "n_questions": 31,
+    "recall_at_5": 1.0,
+    "answer_rate": 1.0,
+    "groundedness": 1.0,
+    "refusal_accuracy": 1.0,
+    "p50_latency_ms": 2035,
+    "mean_cost_usd": 0.00028
+  },
+  "threshold_sweep": {
+    "0.2": {
+      "answerable_refused": 0,
+      "unanswerable_gated": "0/6"
+    },
+    "0.25": {
+      "answerable_refused": 0,
+      "unanswerable_gated": "0/6"
+    },
+    "0.3": {
+      "answerable_refused": 0,
+      "unanswerable_gated": "0/6"
+    },
+    "0.35": {
+      "answerable_refused": 0,
+      "unanswerable_gated": "1/6"
+    },
+    "0.4": {
+      "answerable_refused": 0,
+      "unanswerable_gated": "3/6"
+    },
+    "0.45": {
+      "answerable_refused": 0,
+      "unanswerable_gated": "4/6"
+    },
+    "0.5": {
+      "answerable_refused": 0,
+      "unanswerable_gated": "5/6"
+    }
+  },
+  "rows": [
+    {
+      "id": "ddca-perio-pooling",
+      "answerable": true,
+      "confidence": 0.89,
+      "answered": true,
+      "latency_ms": 3966,
+      "cost_usd": 0.000356,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "payer-playbook-ddca",
+        "resolution-ex-4101",
+        "resolution-ex-4130",
+        "resolution-ex-4116",
+        "payer-playbook-metlife"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "metlife-rolling-year",
+      "answerable": true,
+      "confidence": 0.796,
+      "answered": true,
+      "latency_ms": 1845,
+      "cost_usd": 0.000323,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "payer-playbook-metlife",
+        "resolution-ex-4102",
+        "payer-note-004",
+        "eligibility-data-schema",
+        "payer-playbook-uhc"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "guardian-frequency-history",
+      "answerable": true,
+      "confidence": 0.766,
+      "answered": true,
+      "latency_ms": 2035,
+      "cost_usd": 0.000379,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "resolution-ex-4130",
+        "resolution-ex-4103",
+        "resolution-ex-4126",
+        "resolution-ex-4101",
+        "payer-playbook-guardian"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "aetna-srp-review",
+      "answerable": true,
+      "confidence": 0.844,
+      "answered": true,
+      "latency_ms": 2218,
+      "cost_usd": 0.000396,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "resolution-ex-4128",
+        "resolution-ex-4104",
+        "payer-playbook-aetna",
+        "glossary",
+        "payer-note-010"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "uhc-xray-bucket",
+      "answerable": true,
+      "confidence": 0.594,
+      "answered": true,
+      "latency_ms": 2458,
+      "cost_usd": 0.000328,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "payer-playbook-uhc",
+        "resolution-ex-4105",
+        "resolution-ex-4124",
+        "payer-note-013",
+        "resolution-ex-4114"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "fep-cleanings",
+      "answerable": true,
+      "confidence": 0.85,
+      "answered": true,
+      "latency_ms": 2046,
+      "cost_usd": 0.000317,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "payer-playbook-ddca",
+        "payer-playbook-fep",
+        "payer-playbook-guardian",
+        "payer-playbook-cigna",
+        "payer-playbook-metlife"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "ddca-exhausted-banner",
+      "answerable": true,
+      "confidence": 0.924,
+      "answered": true,
+      "latency_ms": 2219,
+      "cost_usd": 0.000324,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "payer-playbook-ddca",
+        "resolution-ex-4111",
+        "resolution-ex-4101",
+        "payer-note-000",
+        "resolution-ex-4130"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "priority-sla",
+      "answerable": true,
+      "confidence": 0.647,
+      "answered": true,
+      "latency_ms": 2168,
+      "cost_usd": 0.000256,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "resolution-ex-4122",
+        "escalation-matrix",
+        "resolution-ex-4115",
+        "case-study-summit",
+        "priority-queue-policy"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "posting-roadmap",
+      "answerable": true,
+      "confidence": 0.7,
+      "answered": true,
+      "latency_ms": 1855,
+      "cost_usd": 0.000365,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "roadmap-2026",
+        "claims-beta-notes",
+        "pms-writeback-notes",
+        "resolution-ex-4130",
+        "glossary"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "edi-retired",
+      "answerable": true,
+      "confidence": 0.733,
+      "answered": true,
+      "latency_ms": 2251,
+      "cost_usd": 0.000359,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "feature-flags",
+        "objection-handling",
+        "competitive-notes",
+        "eligibility-data-schema",
+        "glossary"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "claims-beta-bar",
+      "answerable": true,
+      "confidence": 0.773,
+      "answered": true,
+      "latency_ms": 1692,
+      "cost_usd": 0.000244,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "claims-beta-notes",
+        "roadmap-2026",
+        "feature-flags",
+        "slack-eng-incidents-1786496400",
+        "standup-2026-08-18"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "metlife-mfa-firstofmonth",
+      "answerable": true,
+      "confidence": 0.811,
+      "answered": true,
+      "latency_ms": 1868,
+      "cost_usd": 0.000302,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "incident-2026-041-metlife-mfa",
+        "payer-playbook-metlife",
+        "payer-note-005",
+        "oncall-runbook",
+        "resolution-ex-4120"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "captcha-policy",
+      "answerable": true,
+      "confidence": 0.602,
+      "answered": true,
+      "latency_ms": 2069,
+      "cost_usd": 0.00035,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "payer-playbook-uhc",
+        "known-limitations",
+        "slack-eng-incidents-1783566000",
+        "payer-note-014",
+        "incident-2026-055-uhc-captcha"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "writeback-duplicates",
+      "answerable": true,
+      "confidence": 0.758,
+      "answered": true,
+      "latency_ms": 2607,
+      "cost_usd": 0.000319,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "pms-writeback-notes",
+        "incident-2026-032-eaglesoft-writeback",
+        "known-limitations",
+        "objection-handling",
+        "architecture-overview"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "scrape-breakage",
+      "answerable": true,
+      "confidence": 0.676,
+      "answered": true,
+      "latency_ms": 3392,
+      "cost_usd": 0.000362,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "why-portal-scrapes-break",
+        "exception-taxonomy",
+        "competitive-notes",
+        "payer-playbook-uhc"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "growth-price",
+      "answerable": true,
+      "confidence": 0.612,
+      "answered": true,
+      "latency_ms": 1812,
+      "cost_usd": 0.000368,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "pricing-2026-06",
+        "competitive-notes",
+        "objection-handling",
+        "glossary",
+        "eligibility-data-schema"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "va-objection",
+      "answerable": true,
+      "confidence": 0.863,
+      "answered": true,
+      "latency_ms": 2533,
+      "cost_usd": 0.000418,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "objection-handling",
+        "competitive-notes",
+        "glossary",
+        "lookback-audit-spec",
+        "eligibility-data-schema"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "summit-results",
+      "answerable": true,
+      "confidence": 0.81,
+      "answered": true,
+      "latency_ms": 2353,
+      "cost_usd": 0.000379,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "case-study-summit",
+        "case-study-coastal",
+        "glossary",
+        "resolution-ex-4123",
+        "resolution-ex-4130"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "lookback-audit",
+      "answerable": true,
+      "confidence": 0.829,
+      "answered": true,
+      "latency_ms": 2249,
+      "cost_usd": 0.000376,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "lookback-audit-spec",
+        "glossary",
+        "competitive-notes",
+        "pilot-playbook",
+        "objection-handling"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "pto-days",
+      "answerable": true,
+      "confidence": 0.862,
+      "answered": true,
+      "latency_ms": 2031,
+      "cost_usd": 0.000239,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "pto-policy",
+        "onboarding-day1",
+        "parental-leave",
+        "payer-playbook-fep"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "parental-primary",
+      "answerable": true,
+      "confidence": 0.858,
+      "answered": true,
+      "latency_ms": 1705,
+      "cost_usd": 0.000297,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "parental-leave",
+        "priority-queue-policy",
+        "exception-taxonomy",
+        "resolution-ex-4127",
+        "payer-playbook-guardian"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "phi-in-slack",
+      "answerable": true,
+      "confidence": 0.678,
+      "answered": true,
+      "latency_ms": 2179,
+      "cost_usd": 0.000338,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "slack-general-1782961200",
+        "vendor-list",
+        "standup-2026-08-18",
+        "payer-playbook-uhc",
+        "known-limitations"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "current-str",
+      "answerable": true,
+      "confidence": 0.594,
+      "answered": true,
+      "latency_ms": 1606,
+      "cost_usd": 0.000362,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "glossary",
+        "qa-rubric",
+        "slack-eng-incidents-1783566000",
+        "incident-2026-055-uhc-captcha",
+        "pricing-2026-06"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "aht-lookup-share",
+      "answerable": true,
+      "confidence": 0.745,
+      "answered": true,
+      "latency_ms": 2315,
+      "cost_usd": 0.0003,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "time-study-2026-07",
+        "exception-taxonomy",
+        "standup-2026-08-18",
+        "standup-2026-08-11"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "comp-band-leadership",
+      "answerable": true,
+      "confidence": 0.844,
+      "answered": true,
+      "latency_ms": 1831,
+      "cost_usd": 0.000242,
+      "recall_at_5": true,
+      "retrieved_top5": [
+        "comp-bands-fy2026",
+        "pto-policy",
+        "hiring-loop",
+        "parental-leave",
+        "vendor-list"
+      ],
+      "expect_hit": true,
+      "grounded": true,
+      "unsupported_claim": null
+    },
+    {
+      "id": "humana-quirks",
+      "answerable": false,
+      "confidence": 0.473,
+      "answered": false,
+      "latency_ms": 660,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "soc2-status",
+      "answerable": false,
+      "confidence": 0.389,
+      "answered": false,
+      "latency_ms": 478,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "clearinghouse-vendor",
+      "answerable": false,
+      "confidence": 0.628,
+      "answered": false,
+      "latency_ms": 1307,
+      "cost_usd": 0.000313
+    },
+    {
+      "id": "comp-band-everyone",
+      "answerable": false,
+      "confidence": 0.309,
+      "answered": false,
+      "latency_ms": 588,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "q2-churn",
+      "answerable": false,
+      "confidence": 0.423,
+      "answered": false,
+      "latency_ms": 667,
+      "cost_usd": 0.0
+    },
+    {
+      "id": "offsite-2026",
+      "answerable": false,
+      "confidence": 0.369,
+      "answered": false,
+      "latency_ms": 592,
+      "cost_usd": 0.0
+    }
+  ]
+}
