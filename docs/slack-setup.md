@@ -70,6 +70,16 @@ the history API at all — what it missed while dark stays missed, by design.
 The architecture the Brain already had for Telegram (live events, boundary
 redaction, distill-on-quiet) is the one Slack's own platform rules now force.
 
+## If a command ever fails with `operation_timeout`
+
+Slack gives a slash command 3 seconds; a free-tier instance that has gone to
+sleep takes ~40 to wake. The app defends itself two ways: handlers never run
+on the event loop (so nothing in-process can eat the 3 seconds), and the app
+self-pings its public URL every 4 minutes so the platform never idles it
+(`SELF_PING_SECONDS`, 0 to disable — an external cron proved too unpunctual
+to trust with a hard deadline). If you ever see a timeout anyway, the
+instance was mid-deploy: retry once a few seconds later.
+
 ## The demo beat
 
 Say three messages about some made-up payer quirk → `/teach` → `/ask` the

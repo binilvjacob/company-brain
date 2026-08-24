@@ -85,6 +85,21 @@ class RecipeCreateBody(BaseModel):
     created_by: str = "api"
 
 
+def _self_ping(base: str) -> None:
+    """Keep the free-tier instance awake: request ourselves through the public
+    URL so the platform edge sees inbound traffic. A sleeping instance can't
+    wake itself — this prevents the sleep, it doesn't cure it — which is why
+    it runs from the moment the instance is up. See config.SELF_PING_SECONDS."""
+    import time as _time
+    import urllib.request as _rq
+    while True:
+        _time.sleep(config.SELF_PING_SECONDS)
+        try:
+            _rq.urlopen(f"{base}/healthz", timeout=30).read()
+        except Exception as e:  # noqa: BLE001 — a failed ping must never matter
+            print(f"self-ping failed: {e}")
+
+
 @app.on_event("startup")
 def _wire_connectors():
     # On Render, RENDER_EXTERNAL_URL is set by the platform — a deploy with the
@@ -94,6 +109,10 @@ def _wire_connectors():
     base = os.environ.get("RENDER_EXTERNAL_URL", "").rstrip("/")
     if tg.enabled() and base:
         tg.register_webhook(base)
+    if base and config.SELF_PING_SECONDS > 0:
+        import threading
+        threading.Thread(target=_self_ping, args=(base,), daemon=True,
+                         name="self-ping").start()
 
 
 @app.get("/healthz")

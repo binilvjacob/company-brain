@@ -61,6 +61,14 @@ SLACK_BOT_TOKEN = env("SLACK_BOT_TOKEN")
 SLACK_SIGNING_SECRET = env("SLACK_SIGNING_SECRET")
 SLACK_DEFAULT_TEAM = env("SLACK_DEFAULT_TEAM", "ops")
 
+# Self-ping (free-tier honesty, part 2): Render idles a free instance after a
+# few quiet minutes, and a slash command that lands on a sleeping instance is
+# void — Slack allows 3 seconds, the wake takes ~40. An external cron can't be
+# trusted to be punctual (GitHub's fired at 30-68 min gaps on a 10-min
+# schedule), so the app requests itself through its public URL, which counts
+# as inbound traffic at the platform edge. 0 disables.
+SELF_PING_SECONDS = int(env("SELF_PING_SECONDS", "240"))
+
 # Authority: an SOP should outrank a Slack message at equal relevance.
 DOC_TYPE_AUTHORITY = {
     "sop": 1.0,
