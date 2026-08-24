@@ -1,0 +1,50 @@
+# Slack app manifest — create the whole app in ~2 minutes:
+# api.slack.com/apps → "Create New App" → "From a manifest" → paste this file.
+# If you're running your own deploy, replace company-brain-cugn.onrender.com
+# with your URL first. The endpoints answer Slack's URL check even before the
+# secrets are configured, so the manifest applies cleanly on the first try.
+display_information:
+  name: Company Brain
+  description: Cited answers or honest refusals — the team's knowledge, live.
+  background_color: "#1f2430"
+features:
+  bot_user:
+    display_name: Company Brain
+    always_online: true
+  slash_commands:
+    - command: /ask
+      url: https://company-brain-cugn.onrender.com/hooks/slack/commands
+      description: Ask the Brain — cited answer or honest refusal
+      usage_hint: does DDCA count D4910 against the cleaning frequency limit?
+      should_escape: false
+    - command: /teach
+      url: https://company-brain-cugn.onrender.com/hooks/slack/commands
+      description: Save the last n messages as vouched knowledge
+      usage_hint: "[n]  (default 20)"
+      should_escape: false
+    - command: /team
+      url: https://company-brain-cugn.onrender.com/hooks/slack/commands
+      description: Set which team this channel files knowledge under
+      usage_hint: ops | product | eng | gtm | ga | meta
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - app_mentions:read   # @Company Brain <question>
+      - channels:history    # ambient capture in public channels the bot is in
+      - channels:read
+      - groups:history      # same, for private channels it's invited to
+      - groups:read
+      - chat:write          # answers and confirmations
+      - commands
+      - users:read          # user ids -> names, for provenance that reads
+settings:
+  event_subscriptions:
+    request_url: https://company-brain-cugn.onrender.com/hooks/slack
+    bot_events:
+      - app_mention
+      - message.channels
+      - message.groups
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

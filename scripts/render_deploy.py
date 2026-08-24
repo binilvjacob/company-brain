@@ -90,6 +90,8 @@ def ensure_service(oid: str, database_url: str) -> tuple[dict, str | None]:
         # Live-connector secrets (empty when not configured — connector stays off).
         {"key": "TELEGRAM_BOT_TOKEN", "value": os.environ.get("TELEGRAM_BOT_TOKEN", "")},
         {"key": "CONNECTOR_SECRET", "value": os.environ.get("CONNECTOR_SECRET", "")},
+        {"key": "SLACK_BOT_TOKEN", "value": os.environ.get("SLACK_BOT_TOKEN", "")},
+        {"key": "SLACK_SIGNING_SECRET", "value": os.environ.get("SLACK_SIGNING_SECRET", "")},
     ]
     if not svc:
         print(f"creating web service {SVC_NAME} ...")

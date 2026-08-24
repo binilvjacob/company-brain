@@ -89,6 +89,26 @@ if health.get("connectors", {}).get("telegram"):
 else:
     print("SKIP  telegram checks (connector not configured on this deploy)")
 
+# The Slack URL-verification echo is deliberately available even while the
+# connector is dark (it is what lets the app manifest apply first try), so it
+# smokes on every deploy.
+try:
+    probe = post("/hooks/slack", {"type": "url_verification", "challenge": "smoke-probe"})
+except Exception as e:  # noqa: BLE001
+    probe = {"error": str(e)}
+check("slack: url_verification echoes (manifest liveness)",
+      probe.get("challenge") == "smoke-probe", probe.get("error", ""))
+
+if health.get("connectors", {}).get("slack"):
+    # Connector live: unsigned events must be rejected.
+    try:
+        post("/hooks/slack", {"type": "event_callback", "event": {}})
+        check("slack: events auth enforced", False, "unsigned call accepted")
+    except urllib.error.HTTPError as e:
+        check("slack: events auth enforced", e.code == 403, f"status={e.code}")
+else:
+    print("SKIP  slack checks (connector not configured on this deploy)")
+
 if FAILURES:
     print(f"\n{len(FAILURES)} smoke failure(s): {FAILURES}")
     sys.exit(1)

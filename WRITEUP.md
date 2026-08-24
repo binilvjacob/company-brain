@@ -58,10 +58,11 @@ refusal that becomes a logged, owner-routed gap.
 | Eval harness with golden set | Without a baseline, "retrieval improved" is a feeling |
 | Synthetic 114-object corpus with planted contradictions, restricted docs, and real gaps | The demo is only as honest as the questions it can fail |
 | **A live connector (Telegram, standing in for WhatsApp)** — the bot sits in a group chat: messages buffer (PHI-redacted at the boundary), quiet threads distill into low-authority chat notes, `/teach` captures vouched knowledge with provenance, `/ask` answers in-chat with citations | The collection problem *is* the product problem — one live stream proves knowledge arrives with no exports and no uploads; chat is distilled, not hoovered, so trust tiers survive |
+| **A second live connector (Slack)** — same webhook shape: transport swapped (HMAC request signing, URL challenge, 3-second slash ack via `response_url`), buffer→digest→capture core shared with Telegram (`connectors/common.py`); `@Company Brain` answers in-thread, ambient digests file as `slack_thread` beside the v1 export adapter's threads | The v1 cut-list called live Slack "scope, not design" — this row is that claim cashed. And Slack now *forces* live-first: since May 2025, new non-Marketplace apps read history at 1 req/min, 15 messages/call — capture-as-said, or never |
 
 | Deferred | Why |
 |---|---|
-| Live Slack/Notion/Drive connectors (OAuth) | OAuth plumbing reviewers can't see; the `SourceAdapter` interface + the working Telegram connector prove the seam and the live path — Slack's Events API is the same webhook shape as Telegram's, so each remaining connector is scope, not design |
+| Live Notion/Drive connectors (OAuth) | OAuth plumbing reviewers can't see; the working Telegram and Slack connectors prove the seam and the live path (Slack's single-workspace install is token-based — no OAuth flow — which is exactly why it could ship and these can wait), so each remaining connector is scope, not design |
 | Auth/SSO | Doc-level `visibility` tags + a role switcher demonstrate permission thinking in 20 lines |
 | Feedback ranking (thumbs up/down retraining) | Needs real usage data to be honest |
 
@@ -145,7 +146,15 @@ touch disk, quiet conversations distill into low-authority chat notes, a
 and `/ask` answers in the chat — cited, or refused into the gap log. No
 exports, no uploads, nobody doing anything manually: knowledge is collected
 where it is generated, at the trust tier it deserves. Slack's Events API is
-the same webhook shape, which is why it's next rather than novel.
+the same webhook shape — and shipping it proved the point: the Slack
+connector swaps the transport (request signing instead of a secret header, a
+URL challenge, a 3-second slash-command ack answered through `response_url`)
+and reuses the identical buffer→digest→capture core, with ambient digests
+filed as `slack_thread` on the same shelf as the v1 export adapter's threads.
+The platform even vindicates the architecture: since May 2025 Slack throttles
+history reads for new non-Marketplace apps to 1 request/minute, so a new app
+cannot export-then-index its way to a knowledge base — it has to catch
+knowledge as it is said, which is the only thing this design ever does.
 
 ## 6. How I know it works — and where it fails
 
@@ -203,8 +212,9 @@ repo's DATA.md says so explicitly.
 
 ## 8. What this becomes in 90 days
 
-Weeks 1–2: real Slack + Notion + Drive connectors behind the existing adapter
-interface, and capture wired to the actual exception queue tool. Weeks 3–6:
+Weeks 1–2: Notion + Drive connectors behind the existing adapter interface
+(Slack already runs live), and capture wired to the actual exception queue
+tool. Weeks 3–6:
 the Gaps dashboard becomes the ops-knowledge backlog with owners and SLAs;
 recipes for the top-5 exception reasons (your FREQ-AMBIG class first). Weeks
 7–12: the experiment that matters — feed captured resolutions and payer

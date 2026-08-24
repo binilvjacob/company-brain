@@ -54,6 +54,13 @@ TELEGRAM_DEFAULT_TEAM = env("TELEGRAM_DEFAULT_TEAM", "ops")
 DIGEST_QUIET_MINUTES = int(env("DIGEST_QUIET_MINUTES", "30"))
 DIGEST_MIN_MESSAGES = int(env("DIGEST_MIN_MESSAGES", "3"))
 
+# Slack (v1.2 — app/connectors/slack.py). A single-workspace install issues
+# the bot token from the app dashboard: token-based like Telegram, no OAuth
+# flow. The signing secret authenticates every inbound Slack request (HMAC).
+SLACK_BOT_TOKEN = env("SLACK_BOT_TOKEN")
+SLACK_SIGNING_SECRET = env("SLACK_SIGNING_SECRET")
+SLACK_DEFAULT_TEAM = env("SLACK_DEFAULT_TEAM", "ops")
+
 # Authority: an SOP should outrank a Slack message at equal relevance.
 DOC_TYPE_AUTHORITY = {
     "sop": 1.0,

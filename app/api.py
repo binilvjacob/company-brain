@@ -3,10 +3,11 @@ import json
 import os
 import secrets as pysecrets
 import traceback
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, Form, Request
+from fastapi import BackgroundTasks, FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -14,6 +15,8 @@ from pydantic import BaseModel
 from app import config, db
 from app.answer import ask
 from app.capture import list_gaps, teach
+from app.connectors import common as connector_common
+from app.connectors import slack as sl
 from app.connectors import telegram as tg
 from app.ingest import ingest_document
 from app.models import KnowledgeObject
@@ -85,6 +88,8 @@ class RecipeCreateBody(BaseModel):
 def _wire_connectors():
     # On Render, RENDER_EXTERNAL_URL is set by the platform — a deploy with the
     # bot token configured registers its own webhook. Zero manual wiring.
+    # (Slack needs no registration call: its app manifest pins the request URL,
+    # and the endpoint answers the manifest's liveness challenge even dark.)
     base = os.environ.get("RENDER_EXTERNAL_URL", "").rstrip("/")
     if tg.enabled() and base:
         tg.register_webhook(base)
@@ -92,7 +97,9 @@ def _wire_connectors():
 
 @app.get("/healthz")
 def healthz():
-    return {"ok": True, "connectors": {"telegram": tg.enabled()}, **db.counts(_conn())}
+    return {"ok": True,
+            "connectors": {"telegram": tg.enabled(), "slack": sl.enabled()},
+            **db.counts(_conn())}
 
 
 # --------------------------------------------------------------- connectors
@@ -123,11 +130,74 @@ async def telegram_hook(request: Request):
 def sync_run(request: Request):
     """Scheduled pull/flush point. The keepwarm cron hits this every 10 minutes,
     which gives free-tier scheduled sync with no worker process: today it
-    flushes quiet chats into ambient digests; Drive/Gmail pollers slot in here."""
+    flushes quiet chats (any source) into ambient digests; Drive/Gmail pollers
+    slot in here."""
     if not _secret_ok(request.headers.get("x-sync-token", "")):
         return JSONResponse({"ok": False}, status_code=403)
-    digests = tg.run_ambient_digest(_conn()) if tg.enabled() else 0
+    digests = connector_common.run_ambient_digest(_conn()) \
+        if (tg.enabled() or sl.enabled()) else 0
     return {"ok": True, "digests": digests}
+
+
+# --- Slack (Events API + slash commands — see app/connectors/slack.py)
+
+def _slack_guard(body: bytes, request: Request) -> JSONResponse | None:
+    """Shared gate for both Slack endpoints: configured, then signed."""
+    if not sl.enabled():
+        return JSONResponse({"ok": False, "detail": "connector not configured"},
+                            status_code=503)
+    if not sl.verify_signature(request.headers.get("x-slack-request-timestamp", ""),
+                               request.headers.get("x-slack-signature", ""), body):
+        return JSONResponse({"ok": False}, status_code=403)
+    return None
+
+
+def _slack_bg(work) -> None:
+    try:
+        work(_conn())
+    except Exception:  # noqa: BLE001 — background failures must not kill the app
+        traceback.print_exc()
+
+
+@app.post("/hooks/slack")
+async def slack_events(request: Request, background_tasks: BackgroundTasks):
+    """Inbound Events API. The url_verification challenge is answered before
+    any gate — it is a liveness probe carrying no data, and echoing it while
+    the connector is still dark is what lets the app manifest (which pins this
+    URL) apply cleanly before the secrets ever reach the deploy. Everything
+    with content sits behind the signature. Events ack immediately and process
+    in the background: Slack redelivers after 3s of silence, and dedupe on
+    (source, chat, ts) makes those redeliveries no-ops."""
+    body = await request.body()
+    try:
+        payload = json.loads(body or b"{}")
+    except json.JSONDecodeError:
+        return JSONResponse({"ok": False}, status_code=400)
+    if payload.get("type") == "url_verification":
+        return {"challenge": payload.get("challenge", "")}
+    if (denied := _slack_guard(body, request)) is not None:
+        return denied
+    if payload.get("type") == "event_callback":
+        background_tasks.add_task(_slack_bg, lambda c: sl.handle_event(c, payload))
+    return {"ok": True}
+
+
+@app.post("/hooks/slack/commands")
+async def slack_commands(request: Request, background_tasks: BackgroundTasks):
+    """Slash commands (/ask, /teach, /team). Signature is verified over the
+    raw form body; slow work acks now and delivers via response_url."""
+    body = await request.body()
+    if (denied := _slack_guard(body, request)) is not None:
+        return denied
+    form = dict(urllib.parse.parse_qsl(body.decode()))
+    try:
+        ack, work = sl.handle_command(_conn(), form)
+    except Exception:  # noqa: BLE001 — ack anyway; Slack shows raw 500s to users
+        traceback.print_exc()
+        return {"response_type": "ephemeral", "text": "Something went wrong — try again."}
+    if work:
+        background_tasks.add_task(_slack_bg, work)
+    return ack
 
 
 @app.post("/search")
